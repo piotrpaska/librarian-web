@@ -1,6 +1,15 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
+import $ from 'jquery';
+
+$(document).ready(function () {
+  // Do something on start
+});
+
+function search() {
+  alert('Search');
+}
 
 const exmData = [
   {
@@ -25,9 +34,29 @@ const exmData = [
 
 function App() {
   return (
-    <div className="container-fluid mt-2 text-center">
-      <h1>Hello world!</h1>
-      <div className="container-fluid">
+    <div className="container-fluid mt-2 text-center px-3">
+      <h1 class="display-5 text-start ms-3 border-bottom">Wypożyczenia</h1>
+      <div className='container-fluid mt-4'>
+        <div className='row'>
+          <div className='col col-auto'>
+            <button type="button" class="btn btn-success">Nowe wypożyczenie</button>
+          </div>
+
+          <div className='col col-auto ms-auto'>
+            <form class="d-flex" role="search" onSubmit={search}>
+              <select class="form-select" aria-label="Default select example">
+                <option value="1" selected>Imię</option>
+                <option value="2">Nazwisko</option>
+                <option value="3">Klasa</option>
+                <option value="4">Tytuł książki</option>
+              </select>
+              <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" />
+              <button class="btn btn-outline-success" type="submit">Szukaj</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div className="container-fluid mt-4">
         <table className="table table-striped">
           <thead>
             <tr>
@@ -39,6 +68,7 @@ function App() {
               <th scope='col'>Kaucja</th>
               <th scope='col'>Data wypożyczenia</th>
               <th scope='col'>Data do zwrotu</th>
+              <th scope='col'>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -52,6 +82,7 @@ function App() {
                 <td>{doc.deposit}</td>
                 <td>{doc.rentalDate}</td>
                 <td>{doc.maxDate}</td>
+                <td>OK</td>
               </tr>
             ))}
           </tbody>
