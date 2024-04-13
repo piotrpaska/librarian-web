@@ -51,6 +51,35 @@ function Rents() {
     }
   };
 
+  function onSubmitForm(e) {
+    e.preventDefault();
+
+    const name = $('#name').val();
+    const lastName = $('#lastName').val();
+    const schoolClass = $('#schoolClass').val();
+    const bookTitle = $('#bookTitle').val();
+    let deposit = $('#deposit').val();
+    const rentalDate = $('#rentalDate').val();;
+    const maxDate = $('#maxDate').val();
+
+    if (!isDeposit) {
+      deposit = 'Brak';
+    }
+
+    const rentData = {
+      name: name,
+      lastName: lastName,
+      schoolClass: schoolClass,
+      bookTitle: bookTitle,
+      deposit: deposit,
+      rentalDate: rentalDate,
+      maxDate: maxDate
+    };
+    alert('Wypożyczenie dodane!')
+    // TODO: Send rent data to mongo here
+    window.location.reload();
+  }
+
   return (
 
     <div className="container-fluid mt-2 text-center px-3">
@@ -117,7 +146,7 @@ function Rents() {
               <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id='addRentForm'>
+            <form id='addRentForm' onSubmit={onSubmitForm}>
               <div class="modal-body text-start">
 
                 <div class="mb-3">
@@ -147,7 +176,7 @@ function Rents() {
                     </div>
                   </div>
                   <div className='col ps-0'>
-                    <input type="text" class="form-control" id="deposit" placeholder='Tylko cyfra' disabled />
+                    <input type="number" class="form-control" id="deposit" placeholder='Tylko cyfra' disabled required/>
                   </div>
                 </div>
                 <div class="mb-3">
