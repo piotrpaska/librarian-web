@@ -1,49 +1,33 @@
+import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import $ from 'jquery';
-
-$(document).ready(function () {
-  // Do something on start
-});
-
-function search() {
-  alert('Search');
-}
-
-const exmData = [
-  {
-    "name": "Karolina",
-    "lastName": "Owczarzak",
-    "schoolClass": "Nauczyciel",
-    "bookTitle": "Mam prawo i nie zawaham sie go uzyc",
-    "deposit": "10zl",
-    "rentalDate": "09.10.2023",
-    "maxDate": "23.10.2023"
-  },
-  {
-    "name": "Emilian",
-    "lastName": "Wieruszewski",
-    "schoolClass": "7a",
-    "bookTitle": "Niepowstrzymani",
-    "deposit": "Brak",
-    "rentalDate": "20.12.2023",
-    "maxDate": "14:10"
-  }
-]
+import api from './Api';
 
 function History() {
+
+  const [rents, setRents] = useState([]);
+
+  useEffect(() => {
+    document.getElementById('history-href').classList.add('active');
+  }, [])
+
+  const fetchRents = async () => {
+    const response = await api.get('/history/')
+    setRents(response.data)
+  }
+
+  useEffect(() => {
+    fetchRents()
+  }, [])
+
   return (
     
     <div className="container-fluid mt-2 text-center px-3">
       <h1 class="display-5 text-start ms-3 border-bottom">Historia</h1>
       <div className='container-fluid mt-4'>
         <div className='row'>
-          <div className='col col-auto'>
-            <button type="button" class="btn btn-success">Nowe wypożyczenie</button>
-          </div>
-
           <div className='col col-auto ms-auto'>
-            <form class="d-flex" role="search" onSubmit={search}>
+            <form class="d-flex" role="search">
               <select class="form-select" aria-label="Default select example">
                 <option value="1" selected>Imię</option>
                 <option value="2">Nazwisko</option>
@@ -67,13 +51,13 @@ function History() {
               <th scope='col'>Tytuł książki</th>
               <th scope='col'>Kaucja</th>
               <th scope='col'>Data wypożyczenia</th>
-              <th scope='col'>Data do zwrotu</th>
-              <th scope='col'>Status</th>
+              <th scope='col'>Termin</th>
+              <th scope='col'>Data zwrotu</th>
             </tr>
           </thead>
           <tbody>
-            {exmData.map((doc, index) => (
-              <tr>
+            {rents.map((doc, index) => (
+              <tr key={doc.id}>
                 <th scope='row'>{index + 1}</th>
                 <td>{doc.name}</td>
                 <td>{doc.lastName}</td>
@@ -82,7 +66,7 @@ function History() {
                 <td>{doc.deposit}</td>
                 <td>{doc.rentalDate}</td>
                 <td>{doc.maxDate}</td>
-                <td>OK</td>
+                <td>{doc.returnDate}</td>
               </tr>
             ))}
           </tbody>

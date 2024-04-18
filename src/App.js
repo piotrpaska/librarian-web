@@ -19,7 +19,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Rents />} />
         <Route path="/rents" element={<Rents />} />
         <Route path="/history" element={<History />} />
       </Routes>
