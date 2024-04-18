@@ -2,36 +2,22 @@ import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import $ from 'jquery';
-
-function search() {
-  alert('Search');
-}
-
-const exmData = [
-  {
-    "name": "Karolina",
-    "lastName": "Owczarzak",
-    "schoolClass": "Nauczyciel",
-    "bookTitle": "Mam prawo i nie zawaham sie go uzyc",
-    "deposit": "10zl",
-    "rentalDate": "09.10.2023",
-    "maxDate": "23.10.2023"
-  },
-  {
-    "name": "Emilian",
-    "lastName": "Wieruszewski",
-    "schoolClass": "7a",
-    "bookTitle": "Niepowstrzymani",
-    "deposit": "Brak",
-    "rentalDate": "20.12.2023",
-    "maxDate": "14:10"
-  }
-]
+import api from './Api';
 
 function Rents() {
-  
+
   const [isDeposit, setIsDeposit] = useState(false);
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
+  const [rents, setRents] = useState([]);
+
+  const fetchRents = async () => {
+    const response = await api.get('/rent/')
+    setRents(response.data)
+  }
+
+  useEffect(() => {
+    fetchRents()
+  }, [])
 
   const handelIsDepositChange = (event) => {
     setIsDeposit(event.target.checked);
@@ -46,7 +32,7 @@ function Rents() {
         $('#deposit').prop('disabled', true);
         setDueDate(new Date().toISOString().slice(0, 10));
       }
-    }else if (event.target.name === 'dueDate') {
+    } else if (event.target.name === 'dueDate') {
       setDueDate(event.target.value);
     }
   };
@@ -93,7 +79,7 @@ function Rents() {
           </div>
 
           <div className='col col-auto ms-auto'>
-            <form class="d-flex" role="search" onSubmit={search}>
+            <form class="d-flex" role="search">
               <select class="form-select" aria-label="Default select example">
                 <option value="1" selected>Imię</option>
                 <option value="2">Nazwisko</option>
@@ -122,8 +108,8 @@ function Rents() {
             </tr>
           </thead>
           <tbody>
-            {exmData.map((doc, index) => (
-              <tr>
+            {rents.map((doc, index) => (
+              <tr key={doc.id}>
                 <th scope='row'>{index + 1}</th>
                 <td>{doc.name}</td>
                 <td>{doc.lastName}</td>
@@ -155,28 +141,28 @@ function Rents() {
                 </div>
                 <div class="mb-3">
                   <label for="lastName" class="form-label">Nazwisko</label>
-                  <input type="text" class="form-control" id="lastName" required/>
+                  <input type="text" class="form-control" id="lastName" required />
                 </div>
                 <div class="mb-3">
                   <label for="schoolClass" class="form-label">Klasa</label>
-                  <input type="text" class="form-control" id="schoolClass" required/>
+                  <input type="text" class="form-control" id="schoolClass" required />
                 </div>
                 <div class="mb-3">
                   <label for="bookTitle" class="form-label">Tytuł książki</label>
-                  <input type="text" class="form-control" id="bookTitle" required/>
+                  <input type="text" class="form-control" id="bookTitle" required />
                 </div>
                 <div class="row mb-3 align-items-center">
                   <label for="deposit" class="form-label">Kaucja</label>
                   <div className='col pe-0'>
                     <div class="form-check">
-                      <input class="form-check-input" type="checkbox" value="" id="isDeposit" name='isDeposit' onChange={handelIsDepositChange}/>
+                      <input class="form-check-input" type="checkbox" value="" id="isDeposit" name='isDeposit' onChange={handelIsDepositChange} />
                       <label class="form-check-label" for="flexCheckDefault">
                         Wypożyczenie z kaucją?
                       </label>
                     </div>
                   </div>
                   <div className='col ps-0'>
-                    <input type="number" class="form-control" id="deposit" placeholder='Tylko cyfra' disabled required/>
+                    <input type="number" class="form-control" id="deposit" placeholder='Tylko cyfra' disabled required />
                   </div>
                 </div>
                 <div class="mb-3">
@@ -198,7 +184,7 @@ function Rents() {
         </div>
       </div >
     </div>
-      );
+  );
 }
 
 export default Rents;

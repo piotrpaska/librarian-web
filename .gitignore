@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+api-server/__pycache__
+api-server/config/__pycache__
+api-server/models/__pycache__
+api-server/routes/__pycache__
+api-server/schemas/__pycache__
