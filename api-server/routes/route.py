@@ -14,8 +14,5 @@ async def get_rents():
 
 @router.post("/rent/")
 async def add_rent(rent: RentBase):
-    rent = dict(rent)
-
-    rentsCollection.insert_one(rent)
-
-    return rent
+    rentsCollection.insert_one(dict(rent))
+    

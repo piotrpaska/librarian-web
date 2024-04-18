@@ -61,6 +61,8 @@ function Rents() {
       rentalDate: rentalDate,
       maxDate: maxDate
     };
+
+    api.post('/rent/', rentData)
     alert('Wypożyczenie dodane!')
     // TODO: Send rent data to mongo here
     window.location.reload();
