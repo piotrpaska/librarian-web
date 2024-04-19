@@ -10,6 +10,8 @@ function Rents() {
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [rents, setRents] = useState([]);
 
+  //const [selectedId, setSelectedId] = useState('');
+
   const fetchRents = async () => {
     const response = await api.get('/rent/')
     setRents(response.data)
@@ -72,6 +74,24 @@ function Rents() {
     window.location.reload();
   }
 
+  const handleEndRent = (selectedId) => {
+
+    const confirmDeleteModBtn = document.getElementById('confirmDeleteModConfirm');
+    const confirmDeleteModCancelBtn = document.getElementById('confirmDeleteModCancel');
+
+    confirmDeleteModBtn.addEventListener('click', () => {
+      console.log(selectedId);
+      api.delete(`/rent/${selectedId}`);
+      window.location.reload();
+    });
+
+    confirmDeleteModCancelBtn.addEventListener('click', () => {
+      console.log('Anulowano');
+    });
+    // TODO: Add end date to rent in mongo here
+
+  }
+
   return (
 
     <div className="container-fluid mt-2 text-center px-3">
@@ -115,24 +135,46 @@ function Rents() {
             </tr>
           </thead>
           <tbody>
-            {rents.map((doc, index) => (
-              <tr key={doc.id}>
-                <th scope='row'>{index + 1}</th>
-                <td>{doc.name}</td>
-                <td>{doc.lastName}</td>
-                <td>{doc.schoolClass}</td>
-                <td>{doc.bookTitle}</td>
-                <td>{doc.deposit}</td>
-                <td>{doc.rentalDate}</td>
-                <td>{doc.maxDate}</td>
-                <td>OK</td>
-                <td><button className='btn btn-primary btn-sm'><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />
-                </svg></button></td>
-              </tr>
-            ))}
+            {rents.slice(0).reverse().map((rent, index) => {
+              return (
+                <tr id={rent.id} key={rent.id}>
+                  <th scope='row'>{index + 1}</th>
+                  <td>{rent.name}</td>
+                  <td>{rent.lastName}</td>
+                  <td>{rent.schoolClass}</td>
+                  <td>{rent.bookTitle}</td>
+                  <td>{rent.deposit}</td>
+                  <td>{rent.rentalDate}</td>
+                  <td>{rent.maxDate}</td>
+                  <td>Kara: 6zł</td>
+                  <td><button className='btn btn-primary btn-sm' data-bs-toggle="modal" data-bs-target="#confirmDeleteMod" id={rent.id} onClick={() => handleEndRent(rent.id)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />
+                    </svg></button></td>
+                </tr>
+              )
+
+            })}
           </tbody>
         </table>
+      </div>
+
+      <div class="modal fade" tabindex="-1" id='confirmDeleteMod'>
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Potwierdzenie</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p className='fw-medium'>Czy na pewno chcesz zakończyć to wypożyczenie?</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id='confirmDeleteModCancel'>Anuluj</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id='confirmDeleteModConfirm'>Usuń</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="modal fade" id="addRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

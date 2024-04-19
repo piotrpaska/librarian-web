@@ -23,7 +23,7 @@ function History() {
   return (
     
     <div className="container-fluid mt-2 text-center px-3">
-      <h1 class="display-5 text-start ms-3 border-bottom">Historia</h1>
+      <h1 className="display-5 text-start ms-3 border-bottom">Historia</h1>
       <div className='container-fluid mt-4'>
         <div className='row'>
           <div className='col col-auto ms-auto'>
@@ -56,7 +56,7 @@ function History() {
             </tr>
           </thead>
           <tbody>
-            {rents.map((doc, index) => (
+            {rents.slice(0).reverse().map((doc, index) => (
               <tr key={doc.id}>
                 <th scope='row'>{index + 1}</th>
                 <td>{doc.name}</td>
