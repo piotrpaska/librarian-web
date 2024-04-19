@@ -70,7 +70,6 @@ function Rents() {
 
     api.post('/rent/', rentData)
     alert('Wypożyczenie dodane!')
-    // TODO: Send rent data to mongo here
     window.location.reload();
   }
 
@@ -88,8 +87,30 @@ function Rents() {
     confirmDeleteModCancelBtn.addEventListener('click', () => {
       console.log('Anulowano');
     });
-    // TODO: Add end date to rent in mongo here
+  }
 
+  function search() {
+    // Declare variables
+    var input, filter, table, tr, td, i, txtValue, filterBy;
+    input = document.getElementById("searchBar");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("table");
+    tr = table.getElementsByTagName("tr");
+
+    filterBy = document.getElementById('filterBy').value;
+  
+    // Loop through all table rows, and hide those who don't match the search query
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td")[filterBy-1];
+      if (td) {
+        txtValue = td.textContent || td.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+    }
   }
 
   return (
@@ -98,28 +119,27 @@ function Rents() {
       <h1 class="display-5 text-start ms-3 border-bottom">Wypożyczenia</h1>
       <div className='container-fluid mt-4'>
         <div className='row'>
+
+          <div className='col col-auto me-auto d-flex'>
+              <select class="form-select" aria-label="Default select example" id='filterBy'>
+                <option value="1" selected>Imię</option>
+                <option value="2">Nazwisko</option>
+                <option value="3">Klasa</option>
+                <option value="4">Tytuł książki</option>
+              </select>
+              <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
+          </div>
+
           <div className='col col-auto'>
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addRentModal">
               Nowe wypożyczenie
             </button>
           </div>
 
-          <div className='col col-auto ms-auto'>
-            <form class="d-flex" role="search">
-              <select class="form-select" aria-label="Default select example">
-                <option value="1" selected>Imię</option>
-                <option value="2">Nazwisko</option>
-                <option value="3">Klasa</option>
-                <option value="4">Tytuł książki</option>
-              </select>
-              <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" />
-              <button class="btn btn-outline-success" type="submit">Szukaj</button>
-            </form>
-          </div>
         </div>
       </div>
       <div className="container-fluid mt-4">
-        <table className="table table-striped">
+        <table className="table table-striped" id='table'>
           <thead>
             <tr>
               <th scope='col'>ID</th>
@@ -148,7 +168,7 @@ function Rents() {
                   <td>{rent.maxDate}</td>
                   <td>Kara: 6zł</td>
                   <td><button className='btn btn-primary btn-sm' data-bs-toggle="modal" data-bs-target="#confirmDeleteMod" id={rent.id} onClick={() => handleEndRent(rent.id)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16</svg>">
                       <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />
                     </svg></button></td>
                 </tr>
