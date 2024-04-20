@@ -64,8 +64,8 @@ function Rents() {
       schoolClass: schoolClass,
       bookTitle: bookTitle,
       deposit: deposit,
-      rentalDate: rentalDate,
-      maxDate: maxDate
+      rentDate: rentalDate,
+      dueDate: maxDate
     };
 
     api.post('/rent/', rentData)
@@ -147,7 +147,7 @@ function Rents() {
               <th scope='col'>Nazwisko</th>
               <th scope='col'>Klasa</th>
               <th scope='col'>Tytuł książki</th>
-              <th scope='col'>Kaucja</th>
+              <th scope='col'>{'Kaucja (zł)'}</th>
               <th scope='col'>Data wypożyczenia</th>
               <th scope='col'>Termin</th>
               <th scope='col'>Status</th>
@@ -164,8 +164,8 @@ function Rents() {
                   <td>{rent.schoolClass}</td>
                   <td>{rent.bookTitle}</td>
                   <td>{rent.deposit}</td>
-                  <td>{rent.rentalDate}</td>
-                  <td>{rent.maxDate}</td>
+                  <td>{rent.rentDate}</td>
+                  <td>{rent.dueDate}</td>
                   <td>Kara: 6zł</td>
                   <td><button className='btn btn-primary btn-sm' data-bs-toggle="modal" data-bs-target="#confirmDeleteMod" id={rent.id} onClick={() => handleEndRent(rent.id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16</svg>">

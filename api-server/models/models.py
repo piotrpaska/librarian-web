@@ -6,5 +6,5 @@ class RentBase(BaseModel):
     schoolClass: str
     bookTitle: str
     deposit: str
-    rentalDate: str
-    maxDate: str
+    rentDate: str
+    dueDate: str

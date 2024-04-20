@@ -70,7 +70,7 @@ function History() {
               <th scope='col'>Nazwisko</th>
               <th scope='col'>Klasa</th>
               <th scope='col'>Tytuł książki</th>
-              <th scope='col'>Kaucja</th>
+              <th scope='col'>{'Kaucja (zł)'}</th>
               <th scope='col'>Data wypożyczenia</th>
               <th scope='col'>Termin</th>
               <th scope='col'>Data zwrotu</th>
@@ -85,8 +85,8 @@ function History() {
                 <td>{doc.schoolClass}</td>
                 <td>{doc.bookTitle}</td>
                 <td>{doc.deposit}</td>
-                <td>{doc.rentalDate}</td>
-                <td>{doc.maxDate}</td>
+                <td>{doc.rentDate}</td>
+                <td>{doc.dueDate}</td>
                 <td>{doc.returnDate}</td>
               </tr>
             ))}
