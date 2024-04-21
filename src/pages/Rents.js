@@ -52,10 +52,11 @@ function Rents() {
     const bookTitle = $('#bookTitle').val();
     let deposit = $('#deposit').val();
     const rentalDate = $('#rentalDate').val();;
-    const maxDate = $('#maxDate').val();
+    var maxDate = $('#maxDate').val();
 
     if (!isDeposit) {
       deposit = 'Brak';
+      maxDate = 'Wypożyczenie jednodniowe';
     }
 
     const rentData = {
@@ -65,7 +66,8 @@ function Rents() {
       bookTitle: bookTitle,
       deposit: deposit,
       rentDate: rentalDate,
-      dueDate: maxDate
+      dueDate: maxDate,
+      isLongRent: isDeposit
     };
 
     api.post('/rent/', rentData)
@@ -109,6 +111,31 @@ function Rents() {
         } else {
           tr[i].style.display = "none";
         }
+      }
+    }
+  }
+
+  const calculateRentStatus = (rentRentalDate, rentDueDate, isLongRent) => { 
+    var rentDate, dueDate, currentDate, diff;
+    rentDate = new Date(rentRentalDate).setHours(0, 0, 0, 0);
+    currentDate = new Date().setHours(0, 0, 0, 0);
+
+    console.log(isLongRent);
+
+    if (isLongRent) {
+      dueDate = new Date(rentDueDate).setHours(0, 0, 0, 0);
+      if (currentDate > dueDate) {
+        diff = currentDate - dueDate;
+        return `Opóźnienie: ${Math.floor((diff)/(24*3600*1000))} dni`;
+      } else {
+        return 'OK';
+      }
+    } else {
+      if (currentDate > rentDate) {
+        diff = currentDate - rentDate;
+        return `Opóźnienie: ${Math.floor((diff)/(24*3600*1000))} dni`;
+      } else {
+        return `OK`;
       }
     }
   }
@@ -166,7 +193,7 @@ function Rents() {
                   <td>{rent.deposit}</td>
                   <td>{rent.rentDate}</td>
                   <td>{rent.dueDate}</td>
-                  <td>Kara: 6zł</td>
+                  <td>{calculateRentStatus(rent.rentDate, rent.dueDate, rent.isLongRent)}</td>
                   <td><button className='btn btn-primary btn-sm' data-bs-toggle="modal" data-bs-target="#confirmDeleteMod" id={rent.id} onClick={() => handleEndRent(rent.id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16</svg>">
                       <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />

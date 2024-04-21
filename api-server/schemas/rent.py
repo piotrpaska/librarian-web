@@ -7,7 +7,8 @@ def individual_serial_rent(rent) -> dict:
         'bookTitle': rent['bookTitle'],
         'deposit': rent['deposit'],
         'rentDate': rent['rentDate'],
-        'dueDate': rent['dueDate']
+        'dueDate': rent['dueDate'],
+        'isLongRent': rent['isLongRent']
     }
 
 def serial_rents(rents) -> list:

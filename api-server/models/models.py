@@ -8,3 +8,4 @@ class RentBase(BaseModel):
     deposit: str
     rentDate: str
     dueDate: str
+    isLongRent: bool
