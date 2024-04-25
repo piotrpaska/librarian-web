@@ -3,8 +3,8 @@ from models.models import RentBase
 from config.database import rentsCollection, historyCollection
 from schemas.rent import serial_rents
 from schemas.history import serial_history
-from bson import ObjectId
 import datetime
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -35,4 +35,27 @@ async def get_history():
     rents = serial_history(historyCollection.find())
 
     return rents
-    
+
+@router.get("/one-rent/{id}")
+async def get_one_rent(id: str):
+    def prepareRentData(rent):
+        return {
+        'id': str(rent['_id']),
+        'name': rent['name'],
+        'lastName': rent['lastName'],
+        'schoolClass': rent['schoolClass'],
+        'bookTitle': rent['bookTitle'],
+        'deposit': rent['deposit'],
+        'rentDate': rent['rentDate'],
+        'dueDate': rent['dueDate'],
+        'isLongRent': rent['isLongRent']
+    }
+
+    rent = rentsCollection.find_one({'_id': ObjectId(id)})
+    rent = prepareRentData(rent)
+    return rent
+
+@router.put("/rent/{id}")
+def update_rent(id: str, rent: RentBase):
+    print(rent)
+    rentsCollection.update_one({'_id': ObjectId(id)}, {'$set': dict(rent)})
