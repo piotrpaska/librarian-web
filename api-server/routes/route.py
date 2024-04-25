@@ -54,3 +54,8 @@ async def get_one_rent(id: str):
     rent = rentsCollection.find_one({'_id': ObjectId(id)})
     rent = prepareRentData(rent)
     return rent
+
+@router.put("/rent/{id}")
+def update_rent(id: str, rent: RentBase):
+    print(rent)
+    rentsCollection.update_one({'_id': ObjectId(id)}, {'$set': dict(rent)})

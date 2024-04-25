@@ -10,21 +10,25 @@ function Rents() {
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [rents, setRents] = useState([]);
 
-  //const [selectedId, setSelectedId] = useState('');
+  const [selectedIdState, setSelectedIdState] = useState('');
 
+  // Define the function to fetch the rents from the API
   const fetchRents = async () => {
     const response = await api.get('/rent/')
     setRents(response.data)
   }
 
+  // Add the active class to the current link
   useEffect(() => {
     document.getElementById('rents-href').classList.add('active');
   }, [])
 
+  // Fetch the rents from the API
   useEffect(() => {
     fetchRents()
   }, [])
 
+  // Handle the change of the deposit checkbox
   const handelIsDepositChange = (event) => {
     setIsDeposit(event.target.checked);
 
@@ -43,7 +47,8 @@ function Rents() {
     }
   };
 
-  function onSubmitForm(e) {
+  // Handle the submit of the add form
+  function onSubmitAddForm(e) {
     e.preventDefault();
 
     const name = $('#name').val();
@@ -75,6 +80,7 @@ function Rents() {
     window.location.reload();
   }
 
+  // Handle the end of the rent
   const handleEndRent = (selectedId) => {
 
     const confirmDeleteModBtn = document.getElementById('confirmDeleteModConfirm');
@@ -91,7 +97,11 @@ function Rents() {
     });
   }
 
+  // Handle the edit of the rent
   const handleEditRent = async (selectedId) => {
+
+    setSelectedIdState(selectedId);
+
     var rentData;
 
     try {
@@ -129,6 +139,43 @@ function Rents() {
     }
   }
 
+  // Handle the submit of the edit form
+  const onSubmitEditForm = (e) => {
+
+    const selectedId = selectedIdState;
+    
+    e.preventDefault();
+
+    const name = $('#name-edit').val();
+    const lastName = $('#lastName-edit').val();
+    const schoolClass = $('#schoolClass-edit').val();
+    const bookTitle = $('#bookTitle-edit').val();
+    let deposit = $('#deposit-edit').val()
+    const rentalDate = $('#rentalDate-edit').val();;
+    var maxDate = $('#maxDate-edit').val();
+
+    if (!isDeposit) {
+      deposit = 'Brak';
+      maxDate = 'Wypożyczenie jednodniowe';
+    }
+
+    const rentData = {
+      name: name,
+      lastName: lastName,
+      schoolClass: schoolClass,
+      bookTitle: bookTitle,
+      deposit: deposit,
+      rentDate: rentalDate,
+      dueDate: maxDate,
+      isLongRent: isDeposit
+    };
+
+    api.put(`/rent/${selectedId}`, rentData)
+    alert('Wypożyczenie zaktualizowane!')
+    window.location.reload();
+  }
+
+  // Handle the search
   function search() {
     // Declare variables
     var input, filter, table, tr, td, i, txtValue, filterBy;
@@ -153,6 +200,7 @@ function Rents() {
     }
   }
 
+  // Calculate the rent status
   const calculateRentStatus = (rentRentalDate, rentDueDate, isLongRent) => { 
     var rentDate, dueDate, currentDate, diff;
     rentDate = new Date(rentRentalDate).setHours(0, 0, 0, 0);
@@ -278,7 +326,7 @@ function Rents() {
               <h1 class="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id='addRentForm' onSubmit={onSubmitForm}>
+            <form id='addRentForm' onSubmit={onSubmitAddForm}>
               <div class="modal-body text-start">
 
                 <div class="mb-3">
@@ -337,7 +385,7 @@ function Rents() {
               <h1 class="modal-title fs-5" id="exampleModalLabel">Edycja wypożyczenia</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id='editRentForm' onSubmit={onSubmitForm}>
+            <form id='editRentForm' onSubmit={onSubmitEditForm}>
               <div class="modal-body text-start">
 
                 <div class="mb-3">
