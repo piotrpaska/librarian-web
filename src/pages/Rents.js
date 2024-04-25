@@ -50,7 +50,7 @@ function Rents() {
     const lastName = $('#lastName').val();
     const schoolClass = $('#schoolClass').val();
     const bookTitle = $('#bookTitle').val();
-    let deposit = $('#deposit').val();
+    let deposit = $('#deposit').val()
     const rentalDate = $('#rentalDate').val();;
     var maxDate = $('#maxDate').val();
 
@@ -116,10 +116,17 @@ function Rents() {
     schoolClass.val(rentData.schoolClass);
     bookTitle.val(rentData.bookTitle);
     isDeposit.prop('checked', rentData.isLongRent);
-    deposit.val(rentData.deposit);
     rentalDate.val(rentData.rentDate);
-    maxDate.val(rentData.dueDate);
 
+    if (!rentData.isLongRent) {
+      deposit.val('')
+      deposit.prop('disabled', true);
+      parseInt(maxDate.val(rentData.rentDate));
+    } else {
+      maxDate.val(rentData.dueDate);
+      deposit.prop('disabled', false);
+      deposit.val(rentData.deposit);
+    }
   }
 
   function search() {
