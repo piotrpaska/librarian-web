@@ -34,13 +34,13 @@ function Rents() {
     if (event.target.name === 'isDeposit') {
       setIsDeposit(event.target.checked);
       if (!isDeposit) {
-        $('#deposit').prop('disabled', false);
+        $('input[name="deposit"]').prop('disabled', false);
         console.log(rentDate);
         const twoWeeksFromToday = new Date(rentDate);
         twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
         setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
       } else {
-        $('#deposit').prop('disabled', true);
+        $('input[name="deposit"]').prop('disabled', true);
         setDueDate(rentDate);
       }
     } else if (event.target.name === 'dueDate') {
@@ -48,12 +48,12 @@ function Rents() {
       setDueDate(val);
       if (val !== rentDate) {
         setIsDeposit(true);
-        $('#deposit').prop('disabled', false);
-        $('#isDeposit').prop('checked', true);
+        $('input[name="deposit"]').prop('disabled', false);
+        $('input[name="isDeposit"]').prop('checked', true);
       } else {
         setIsDeposit(false);
-        $('#deposit').prop('disabled', true);
-        $('#isDeposit').prop('checked', false);
+        $('input[name="deposit"]').prop('disabled', true);
+        $('input[name="isDeposit"]').prop('checked', false);
       }
     } else if (event.target.name === 'rentDate') {
       setRentDate(event.target.value);
@@ -76,8 +76,8 @@ function Rents() {
     const schoolClass = $('#schoolClass').val();
     const bookTitle = $('#bookTitle').val();
     let deposit = $('#deposit').val()
-    const rentalDate = $('#rentalDate').val();;
-    var maxDate = $('#maxDate').val();
+    const rentalDate = rentDate;
+    var maxDate = dueDate;
 
     if (!isDeposit) {
       deposit = 'Brak';
@@ -94,7 +94,7 @@ function Rents() {
       dueDate: maxDate,
       isLongRent: isDeposit
     };
-
+    console.log(rentData);
     api.post('/rent/', rentData)
     alert('Wypożyczenie dodane!')
     window.location.reload();
@@ -379,7 +379,7 @@ function Rents() {
                     </div>
                   </div>
                   <div className='col ps-0'>
-                    <input type="number" class="form-control" id="deposit" placeholder='Tylko cyfra' disabled required />
+                    <input type="number" class="form-control" id="deposit" name='deposit' placeholder='Tylko cyfra' disabled required />
                   </div>
                 </div>
                 <div class="mb-3">
@@ -431,14 +431,14 @@ function Rents() {
                   <label for="deposit" class="form-label">Kaucja</label>
                   <div className='col pe-0'>
                     <div class="form-check">
-                      <input class="form-check-input" type="checkbox" value="" id="isDeposit-edit" name='isDeposit' onChange={handelIsDepositChange} />
+                      <input class="form-check-input" type="checkbox" value={isDeposit} id="isDeposit-edit" name='isDeposit' onChange={handelIsDepositChange} />
                       <label class="form-check-label" for="flexCheckDefault">
                         Wypożyczenie z kaucją?
                       </label>
                     </div>
                   </div>
                   <div className='col ps-0'>
-                    <input type="number" class="form-control" id="deposit-edit" placeholder='Tylko cyfra' disabled required />
+                    <input type="number" class="form-control" id="deposit-edit" name='deposit' placeholder='Tylko cyfra' disabled required />
                   </div>
                 </div>
                 <div class="mb-3">
