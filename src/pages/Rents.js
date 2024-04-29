@@ -7,6 +7,7 @@ import api from './Api';
 function Rents() {
 
   const [isDeposit, setIsDeposit] = useState(false);
+  const [rentDate, setRentDate] = useState(new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [rents, setRents] = useState([]);
 
@@ -30,20 +31,39 @@ function Rents() {
 
   // Handle the change of the deposit checkbox
   const handelIsDepositChange = (event) => {
-    setIsDeposit(event.target.checked);
-
     if (event.target.name === 'isDeposit') {
+      setIsDeposit(event.target.checked);
       if (!isDeposit) {
         $('#deposit').prop('disabled', false);
-        const twoWeeksFromToday = new Date();
+        console.log(rentDate);
+        const twoWeeksFromToday = new Date(rentDate);
         twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
         setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
       } else {
         $('#deposit').prop('disabled', true);
-        setDueDate(new Date().toISOString().slice(0, 10));
+        setDueDate(rentDate);
       }
     } else if (event.target.name === 'dueDate') {
-      setDueDate(event.target.value);
+      const val = event.target.value;
+      setDueDate(val);
+      if (val !== rentDate) {
+        setIsDeposit(true);
+        $('#deposit').prop('disabled', false);
+        $('#isDeposit').prop('checked', true);
+      } else {
+        setIsDeposit(false);
+        $('#deposit').prop('disabled', true);
+        $('#isDeposit').prop('checked', false);
+      }
+    } else if (event.target.name === 'rentDate') {
+      setRentDate(event.target.value);
+      if (isDeposit) {
+        const twoWeeksFromToday = new Date(event.target.value);
+        twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
+        setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
+      } else {
+        setDueDate(event.target.value);
+      }
     }
   };
 
@@ -206,8 +226,6 @@ function Rents() {
     rentDate = new Date(rentRentalDate).setHours(0, 0, 0, 0);
     currentDate = new Date().setHours(0, 0, 0, 0);
 
-    console.log(isLongRent);
-
     if (isLongRent) {
       dueDate = new Date(rentDueDate).setHours(0, 0, 0, 0);
       if (currentDate > dueDate) {
@@ -224,6 +242,11 @@ function Rents() {
         return `OK`;
       }
     }
+  }
+
+  const resetDates = () => {
+    setRentDate(new Date().toISOString().slice(0, 10));
+    setDueDate(new Date().toISOString().slice(0, 10));
   }
 
   return (
@@ -349,7 +372,7 @@ function Rents() {
                   <label for="deposit" class="form-label">Kaucja</label>
                   <div className='col pe-0'>
                     <div class="form-check">
-                      <input class="form-check-input" type="checkbox" value="" id="isDeposit" name='isDeposit' onChange={handelIsDepositChange} />
+                      <input class="form-check-input" type="checkbox" value={isDeposit} id="isDeposit" name='isDeposit' onChange={handelIsDepositChange} />
                       <label class="form-check-label" for="flexCheckDefault">
                         Wypożyczenie z kaucją?
                       </label>
@@ -361,7 +384,7 @@ function Rents() {
                 </div>
                 <div class="mb-3">
                   <label for="rentalDate" class="form-label">Data wypożyczenia</label>
-                  <input type="date" class="form-control" id="rentalDate" value={new Date().toISOString().split('T')[0]} />
+                  <input type="date" class="form-control" id="rentDate" name='rentDate' value={rentDate} onChange={handelIsDepositChange} />
                 </div>
                 <div class="mb-3">
                   <label for="maxDate" class="form-label">Termin</label>
@@ -370,7 +393,7 @@ function Rents() {
 
               </div>
               <div class="modal-footer">
-                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={resetDates} >Anuluj</button>
                 <button type="submit" id='modalSubmit' class="btn btn-primary">Zatwierdź</button>
               </div>
             </form>
@@ -420,7 +443,7 @@ function Rents() {
                 </div>
                 <div class="mb-3">
                   <label for="rentalDate" class="form-label">Data wypożyczenia</label>
-                  <input type="date" class="form-control" id="rentalDate-edit" value={new Date().toISOString().split('T')[0]} />
+                  <input type="date" class="form-control" id="rentalDate-edit" name='rentDate' value={rentDate} onChange={handelIsDepositChange}/>
                 </div>
                 <div class="mb-3">
                   <label for="maxDate" class="form-label">Termin</label>
@@ -429,7 +452,7 @@ function Rents() {
 
               </div>
               <div class="modal-footer">
-                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={resetDates}>Anuluj</button>
                 <button type="submit" id='modalSubmit' class="btn btn-primary">Zatwierdź</button>
               </div>
             </form>
