@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import $ from 'jquery';
+import $, { contains } from 'jquery';
 import api from './Api';
+import ChooseBookModal from './modals/ChooseBookModal';
 
 function Rents() {
 
@@ -10,6 +11,32 @@ function Rents() {
   const [rentDate, setRentDate] = useState(new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [rents, setRents] = useState([]);
+
+  const [books, setBooks] = useState([]);
+
+  var selectedBook = [];
+
+
+  const handleSelectBook = (code, title) => {
+    console.log([code, title]);
+    selectedBook = [code, title];
+    const btn = document.getElementById('book-' + code);
+    const buttons = document.querySelectorAll('button[id^="book-"]');
+    buttons.forEach(btn => {
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-secondary');
+    });
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-success');
+
+    if (selectedBook.length === 0) {
+      $('#confirmBookSelection').prop('disabled', true);
+    } else {
+      $('#confirmBookSelection').prop('disabled', false);
+    }
+
+    document.getElementById('bookTitleField').innerHTML = title
+  }
 
   const [selectedIdState, setSelectedIdState] = useState('');
 
@@ -163,7 +190,7 @@ function Rents() {
   const onSubmitEditForm = (e) => {
 
     const selectedId = selectedIdState;
-    
+
     e.preventDefault();
 
     const name = $('#name-edit').val();
@@ -205,10 +232,10 @@ function Rents() {
     tr = table.getElementsByTagName("tr");
 
     filterBy = document.getElementById('filterBy').value;
-  
+
     // Loop through all table rows, and hide those who don't match the search query
     for (i = 0; i < tr.length; i++) {
-      td = tr[i].getElementsByTagName("td")[filterBy-1];
+      td = tr[i].getElementsByTagName("td")[filterBy - 1];
       if (td) {
         txtValue = td.textContent || td.innerText;
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
@@ -221,7 +248,7 @@ function Rents() {
   }
 
   // Calculate the rent status
-  const calculateRentStatus = (rentRentalDate, rentDueDate, isLongRent) => { 
+  const calculateRentStatus = (rentRentalDate, rentDueDate, isLongRent) => {
     var rentDate, dueDate, currentDate, diff;
     rentDate = new Date(rentRentalDate).setHours(0, 0, 0, 0);
     currentDate = new Date().setHours(0, 0, 0, 0);
@@ -230,14 +257,14 @@ function Rents() {
       dueDate = new Date(rentDueDate).setHours(0, 0, 0, 0);
       if (currentDate > dueDate) {
         diff = currentDate - dueDate;
-        return `Opóźnienie: ${Math.floor((diff)/(24*3600*1000))} dni`;
+        return `Opóźnienie: ${Math.floor((diff) / (24 * 3600 * 1000))} dni`;
       } else {
         return 'OK';
       }
     } else {
       if (currentDate > rentDate) {
         diff = currentDate - rentDate;
-        return `Opóźnienie: ${Math.floor((diff)/(24*3600*1000))} dni`;
+        return `Opóźnienie: ${Math.floor((diff) / (24 * 3600 * 1000))} dni`;
       } else {
         return `OK`;
       }
@@ -247,6 +274,19 @@ function Rents() {
   const resetDates = () => {
     setRentDate(new Date().toISOString().slice(0, 10));
     setDueDate(new Date().toISOString().slice(0, 10));
+    const buttons = document.querySelectorAll('button[id^="book-"]');
+    buttons.forEach(btn => {
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-secondary');
+    });
+    
+    selectedBook = [];
+    document.getElementById('bookTitleField').innerHTML = '';
+  }
+
+  const fetchBooks = async () => {
+    const response = await api.get('/books/')
+    setBooks(response.data)
   }
 
   return (
@@ -257,13 +297,13 @@ function Rents() {
         <div className='row'>
 
           <div className='col col-auto me-auto d-flex'>
-              <select class="form-select" aria-label="Default select example" id='filterBy'>
-                <option value="1" selected>Imię</option>
-                <option value="2">Nazwisko</option>
-                <option value="3">Klasa</option>
-                <option value="4">Tytuł książki</option>
-              </select>
-              <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
+            <select class="form-select" aria-label="Default select example" id='filterBy'>
+              <option value="1" selected>Imię</option>
+              <option value="2">Nazwisko</option>
+              <option value="3">Klasa</option>
+              <option value="4">Tytuł książki</option>
+            </select>
+            <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
           </div>
 
           <div className='col col-auto'>
@@ -312,8 +352,8 @@ function Rents() {
                     </button>
                     <button className='btn btn-primary btn-sm ms-1' data-bs-toggle="modal" data-bs-target="#editRentModal" onClick={() => handleEditRent(rent.id)}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
                       </svg>
                     </button>
                   </td>
@@ -324,13 +364,12 @@ function Rents() {
           </tbody>
         </table>
       </div>
-      
-      <div class="modal fade" tabindex="-1" id='confirmDeleteMod'>
+
+      <div class="modal fade" tabindex="-1" id='confirmDeleteMod' data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Potwierdzenie</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <p className='fw-medium'>Czy na pewno chcesz zakończyć to wypożyczenie?</p>
@@ -342,13 +381,13 @@ function Rents() {
           </div>
         </div>
       </div>
-      
-      <div class="modal fade" id="addRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+      <div class="modal fade" id="addRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={resetDates}></button>
             </div>
             <form id='addRentForm' onSubmit={onSubmitAddForm}>
               <div class="modal-body text-start">
@@ -366,8 +405,17 @@ function Rents() {
                   <input type="text" class="form-control" id="schoolClass" required />
                 </div>
                 <div class="mb-3">
-                  <label for="bookTitle" class="form-label">Tytuł książki</label>
-                  <input type="text" class="form-control" id="bookTitle" required />
+                  <div class="row">
+                    <div className='col-auto'>
+                      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#chooseBookModal" href="#lost" onClick={fetchBooks}>Wybierz książkę</button>
+                    </div>
+                    <div className='col'>
+                      <div id="passwordHelpBlock" class="form-text">
+                        Wybrana książka:
+                      </div>
+                      <p id='bookTitleField'></p>
+                    </div>
+                  </div>
                 </div>
                 <div class="row mb-3 align-items-center">
                   <label for="deposit" class="form-label">Kaucja</label>
@@ -401,13 +449,13 @@ function Rents() {
           </div>
         </div>
       </div>
-      
-      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="exampleModalLabel">Edycja wypożyczenia</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={resetDates}></button>
             </div>
             <form id='editRentForm' onSubmit={onSubmitEditForm}>
               <div class="modal-body text-start">
@@ -444,7 +492,7 @@ function Rents() {
                 </div>
                 <div class="mb-3">
                   <label for="rentalDate" class="form-label">Data wypożyczenia</label>
-                  <input type="date" class="form-control" id="rentalDate-edit" name='rentDate' value={rentDate} onChange={handelIsDepositChange}/>
+                  <input type="date" class="form-control" id="rentalDate-edit" name='rentDate' value={rentDate} onChange={handelIsDepositChange} />
                 </div>
                 <div class="mb-3">
                   <label for="maxDate" class="form-label">Termin</label>
@@ -460,6 +508,7 @@ function Rents() {
           </div>
         </div>
       </div >
+      <ChooseBookModal books={books} handleSelectBook={handleSelectBook} />
     </div>
   );
 }
