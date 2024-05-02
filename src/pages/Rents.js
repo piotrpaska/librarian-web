@@ -95,6 +95,8 @@ function Rents() {
 
   // Handle the submit of the add form
   function onSubmitAddForm(e) {
+
+    // TODO: Adjust the form to the new book selection
     e.preventDefault();
 
     const name = $('#name').val();

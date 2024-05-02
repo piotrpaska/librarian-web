@@ -4,7 +4,7 @@ def individual_serial_rent(rent) -> dict:
         'name': rent['name'],
         'lastName': rent['lastName'],
         'schoolClass': rent['schoolClass'],
-        'bookTitle': rent['bookTitle'],
+        'bookCode': rent['bookCode'],
         'deposit': rent['deposit'],
         'rentDate': rent['rentDate'],
         'dueDate': rent['dueDate'],
