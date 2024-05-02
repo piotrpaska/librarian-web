@@ -95,8 +95,6 @@ function Rents() {
 
   // Handle the submit of the add form
   function onSubmitAddForm(e) {
-
-    // TODO: Adjust the form to the new book selection
     e.preventDefault();
 
     const name = $('#name').val();
@@ -116,7 +114,6 @@ function Rents() {
       lastName: lastName,
       schoolClass: schoolClass,
       bookCode: selectedBook[0],
-      bookTitle: selectedBook[1],
       deposit: deposit,
       rentDate: rentalDate,
       dueDate: maxDate,
