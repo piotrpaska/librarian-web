@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import $, { contains } from 'jquery';
+import $ from 'jquery';
 import api from './Api';
 import ChooseBookModal from './modals/ChooseBookModal';
+import RentsTable from './components/RentsTable';
 
 function Rents() {
 
@@ -18,7 +19,6 @@ function Rents() {
 
 
   const handleSelectBook = (code, title) => {
-    console.log([code, title]);
     selectedBook = [code, title];
     const btn = document.getElementById('book-' + code);
     const buttons = document.querySelectorAll('button[id^="book-"]');
@@ -62,7 +62,6 @@ function Rents() {
       setIsDeposit(event.target.checked);
       if (!isDeposit) {
         $('input[name="deposit"]').prop('disabled', false);
-        console.log(rentDate);
         const twoWeeksFromToday = new Date(rentDate);
         twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
         setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
@@ -101,7 +100,6 @@ function Rents() {
     const name = $('#name').val();
     const lastName = $('#lastName').val();
     const schoolClass = $('#schoolClass').val();
-    const bookTitle = $('#bookTitle').val();
     let deposit = $('#deposit').val()
     const rentalDate = rentDate;
     var maxDate = dueDate;
@@ -115,14 +113,15 @@ function Rents() {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
-      bookTitle: bookTitle,
+      bookCode: selectedBook[0],
+      bookTitle: selectedBook[1],
       deposit: deposit,
       rentDate: rentalDate,
       dueDate: maxDate,
       isLongRent: isDeposit
     };
-    console.log(rentData);
     api.post('/rent/', rentData)
+    api.get('/book-rent/' + selectedBook[0])
     alert('Wypożyczenie dodane!')
     window.location.reload();
   }
@@ -134,13 +133,8 @@ function Rents() {
     const confirmDeleteModCancelBtn = document.getElementById('confirmDeleteModCancel');
 
     confirmDeleteModBtn.addEventListener('click', () => {
-      console.log(selectedId);
       api.delete(`/rent/${selectedId}`);
       window.location.reload();
-    });
-
-    confirmDeleteModCancelBtn.addEventListener('click', () => {
-      console.log('Anulowano');
     });
   }
 
@@ -154,9 +148,7 @@ function Rents() {
     try {
       const response = await api.get(`/one-rent/${selectedId}`);
       rentData = response.data;
-      console.log(rentData);
     } catch (error) {
-      console.log(error);
     }
 
     const name = $('#name-edit');
@@ -289,6 +281,10 @@ function Rents() {
     setBooks(response.data)
   }
 
+  useEffect(() => {
+    fetchBooks()
+  }, [])
+
   return (
 
     <div className="container-fluid mt-2 text-center px-3">
@@ -315,54 +311,8 @@ function Rents() {
         </div>
       </div>
       <div className="container-fluid mt-4">
-        <table className="table table-striped" id='table'>
-          <thead>
-            <tr>
-              <th scope='col'>ID</th>
-              <th scope='col'>Imię</th>
-              <th scope='col'>Nazwisko</th>
-              <th scope='col'>Klasa</th>
-              <th scope='col'>Tytuł książki</th>
-              <th scope='col'>{'Kaucja (zł)'}</th>
-              <th scope='col'>Data wypożyczenia</th>
-              <th scope='col'>Termin</th>
-              <th scope='col'>Status</th>
-              <th scope='col'></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rents.slice(0).reverse().map((rent, index) => {
-              return (
-                <tr id={rent.id} key={rent.id}>
-                  <th scope='row'>{index + 1}</th>
-                  <td>{rent.name}</td>
-                  <td>{rent.lastName}</td>
-                  <td>{rent.schoolClass}</td>
-                  <td>{rent.bookTitle}</td>
-                  <td>{rent.deposit}</td>
-                  <td>{rent.rentDate}</td>
-                  <td>{rent.dueDate}</td>
-                  <td>{calculateRentStatus(rent.rentDate, rent.dueDate, rent.isLongRent)}</td>
-                  <td>
-                    <button className='btn btn-primary btn-sm me-1' data-bs-toggle="modal" data-bs-target="#confirmDeleteMod" id={rent.id} onClick={() => handleEndRent(rent.id)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
-                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-                      </svg>
-                    </button>
-                    <button className='btn btn-primary btn-sm ms-1' data-bs-toggle="modal" data-bs-target="#editRentModal" onClick={() => handleEditRent(rent.id)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              )
-
-            })}
-          </tbody>
-        </table>
+        {/* Render the rents table */}
+        <RentsTable rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
       </div>
 
       <div class="modal fade" tabindex="-1" id='confirmDeleteMod' data-keyboard="false" data-backdrop="static">

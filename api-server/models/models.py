@@ -4,7 +4,7 @@ class RentBase(BaseModel):
     name: str
     lastName: str
     schoolClass: str
-    bookTitle: str
+    bookCode: str
     deposit: str
     rentDate: str
     dueDate: str

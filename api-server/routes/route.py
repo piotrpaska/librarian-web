@@ -6,6 +6,9 @@ from schemas.history import serial_history
 from schemas.book import serial_books
 import datetime
 from bson import ObjectId
+from colorama import Fore, Style, init
+
+init(autoreset=True)
 
 router = APIRouter()
 
@@ -21,11 +24,9 @@ async def add_rent(rent: RentBase):
 
 @router.delete("/rent/{id}")
 async def delete_rent(id: str):
-    print(id)
     if id == 'null':
         return {'status': 422}
     todayDate = datetime.datetime.now().strftime("%Y-%m-%d")
-    print(todayDate)
     rent = rentsCollection.find_one({'_id': ObjectId(id)})
     rent['returnDate'] = todayDate
     historyCollection.insert_one(rent)
@@ -58,7 +59,6 @@ async def get_one_rent(id: str):
 
 @router.put("/rent/{id}")
 def update_rent(id: str, rent: RentBase):
-    print(rent)
     rentsCollection.update_one({'_id': ObjectId(id)}, {'$set': dict(rent)})
 
 @router.get("/books/")
@@ -66,3 +66,27 @@ async def get_books():
     books = serial_books(booksCollection.find())
 
     return books
+
+@router.get("/book-rent/{code}")
+async def rented_book(code: str):
+    book = booksCollection.find_one({'code': code})
+    booksCollection.update_one({'code': code}, {'$set': {'onStock': book['onStock'] - 1, 'rented': book['rented'] + 1}})
+
+@router.get("/book-return/{code}")
+async def return_book(code: str):
+    book = booksCollection.find_one({'code': code})
+    booksCollection.update_one({'code': code}, {'$set': {'onStock': book['onStock'] + 1, 'rented': book['rented'] - 1}})
+
+@router.get("/book/{code}")
+async def get_one_book(code: str):
+
+    def prepareBookData(book):
+        return {
+            'code': book['code'],
+            'title': book['title'],
+            'onStock': book['onStock'],
+            'rented': book['rented']
+        }
+    book = booksCollection.find_one({'code': code})
+    book = prepareBookData(book)
+    return dict(book)
