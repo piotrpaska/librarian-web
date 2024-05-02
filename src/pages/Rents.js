@@ -126,13 +126,14 @@ function Rents() {
   }
 
   // Handle the end of the rent
-  const handleEndRent = (selectedId) => {
+  const handleEndRent = (selectedId, bookCode) => {
 
     const confirmDeleteModBtn = document.getElementById('confirmDeleteModConfirm');
     const confirmDeleteModCancelBtn = document.getElementById('confirmDeleteModCancel');
 
     confirmDeleteModBtn.addEventListener('click', () => {
       api.delete(`/rent/${selectedId}`);
+      api.get('/book-return/' + bookCode)
       window.location.reload();
     });
   }
