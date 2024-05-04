@@ -15,11 +15,32 @@ function Rents() {
 
   const [books, setBooks] = useState([]);
 
-  var selectedBook = [];
+  const [selectedBook, setSelectedBook] = useState([]);
 
+  const [chooseBookModalExec, setChooseBookModalExec] = useState('');
+
+  const [selectedIdState, setSelectedIdState] = useState('');
+
+  document.getElementById('rents-href').classList.add('active');
+
+  useEffect(() => {
+    if (selectedBook.length === 0) {
+      $('#confirmBookSelection').prop('disabled', true);
+    } else {
+      $('#confirmBookSelection').prop('disabled', false);
+    }
+  }, [selectedBook]);
+
+  useEffect(() => {
+    const fetchRents = async () => {
+      const response = await api.get('/rent/')
+      setRents(response.data)
+    }
+    fetchRents()
+  }, [])
 
   const handleSelectBook = (code, title) => {
-    selectedBook = [code, title];
+    setSelectedBook([code, title]);
     const btn = document.getElementById('book-' + code);
     const buttons = document.querySelectorAll('button[id^="book-"]');
     buttons.forEach(btn => {
@@ -29,32 +50,9 @@ function Rents() {
     btn.classList.remove('btn-secondary');
     btn.classList.add('btn-success');
 
-    if (selectedBook.length === 0) {
-      $('#confirmBookSelection').prop('disabled', true);
-    } else {
-      $('#confirmBookSelection').prop('disabled', false);
-    }
-
     document.getElementById('bookTitleField').innerHTML = title
+    document.getElementById('bookTitleField-edit').innerHTML = title
   }
-
-  const [selectedIdState, setSelectedIdState] = useState('');
-
-  // Define the function to fetch the rents from the API
-  const fetchRents = async () => {
-    const response = await api.get('/rent/')
-    setRents(response.data)
-  }
-
-  // Add the active class to the current link
-  useEffect(() => {
-    document.getElementById('rents-href').classList.add('active');
-  }, [])
-
-  // Fetch the rents from the API
-  useEffect(() => {
-    fetchRents()
-  }, [])
 
   // Handle the change of the deposit checkbox
   const handelIsDepositChange = (event) => {
@@ -129,7 +127,6 @@ function Rents() {
   const handleEndRent = (selectedId, bookCode) => {
 
     const confirmDeleteModBtn = document.getElementById('confirmDeleteModConfirm');
-    const confirmDeleteModCancelBtn = document.getElementById('confirmDeleteModCancel');
 
     confirmDeleteModBtn.addEventListener('click', () => {
       api.delete(`/rent/${selectedId}`);
@@ -140,21 +137,30 @@ function Rents() {
 
   // Handle the edit of the rent
   const handleEditRent = async (selectedId) => {
-
     setSelectedIdState(selectedId);
 
-    var rentData;
-
-    try {
-      const response = await api.get(`/one-rent/${selectedId}`);
-      rentData = response.data;
-    } catch (error) {
+    async function getBook(code) {
+      try {
+        const response = await api.get(`/book/${code}`);
+        console.log(response.data);
+        return response.data.title;
+      } catch (error) {
+        console.error(error);
+      }
     }
+
+    const response = await api.get(`/one-rent/${selectedId}`);
+    const rentData = response.data;
+
+    console.log(rentData);
 
     const name = $('#name-edit');
     const lastName = $('#lastName-edit');
     const schoolClass = $('#schoolClass-edit');
-    const bookTitle = $('#bookTitle-edit');
+
+    await setSelectedBook([rentData.bookCode, await getBook(rentData.bookCode)]);
+    document.getElementById('bookTitleField-edit').innerHTML = await getBook(rentData.bookCode);
+
     const isDeposit = $('#isDeposit-edit');
     const deposit = $('#deposit-edit');
     const rentalDate = $('#rentalDate-edit');
@@ -163,7 +169,6 @@ function Rents() {
     name.val(rentData.name);
     lastName.val(rentData.lastName);
     schoolClass.val(rentData.schoolClass);
-    bookTitle.val(rentData.bookTitle);
     isDeposit.prop('checked', rentData.isLongRent);
     rentalDate.val(rentData.rentDate);
 
@@ -188,7 +193,6 @@ function Rents() {
     const name = $('#name-edit').val();
     const lastName = $('#lastName-edit').val();
     const schoolClass = $('#schoolClass-edit').val();
-    const bookTitle = $('#bookTitle-edit').val();
     let deposit = $('#deposit-edit').val()
     const rentalDate = $('#rentalDate-edit').val();;
     var maxDate = $('#maxDate-edit').val();
@@ -202,7 +206,7 @@ function Rents() {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
-      bookTitle: bookTitle,
+      bookCode: selectedBook[0],
       deposit: deposit,
       rentDate: rentalDate,
       dueDate: maxDate,
@@ -271,8 +275,8 @@ function Rents() {
       btn.classList.remove('btn-success');
       btn.classList.add('btn-secondary');
     });
-    
-    selectedBook = [];
+
+    setSelectedBook([]);
     document.getElementById('bookTitleField').innerHTML = '';
   }
 
@@ -331,8 +335,8 @@ function Rents() {
           </div>
         </div>
       </div>
-
-      <div class="modal fade" id="addRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+      
+      <div class="modal fade" id="addRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
@@ -357,7 +361,8 @@ function Rents() {
                 <div class="mb-3">
                   <div class="row">
                     <div className='col-auto'>
-                      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#chooseBookModal" href="#lost" onClick={fetchBooks}>Wybierz książkę</button>
+                      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#chooseBookModal" href="#lost"
+                        onClick={() => { fetchBooks(); setChooseBookModalExec('addRent') }}>Wybierz książkę</button>
                     </div>
                     <div className='col'>
                       <div id="passwordHelpBlock" class="form-text">
@@ -392,7 +397,7 @@ function Rents() {
 
               </div>
               <div class="modal-footer">
-                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={resetDates} >Anuluj</button>
+                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={() => { resetDates(); setSelectedBook([]); }} >Anuluj</button>
                 <button type="submit" id='modalSubmit' class="btn btn-primary">Zatwierdź</button>
               </div>
             </form>
@@ -400,7 +405,7 @@ function Rents() {
         </div>
       </div>
 
-      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
@@ -423,8 +428,10 @@ function Rents() {
                   <input type="text" class="form-control" id="schoolClass-edit" required />
                 </div>
                 <div class="mb-3">
-                  <label for="bookTitle" class="form-label">Tytuł książki</label>
-                  <input type="text" class="form-control" id="bookTitle-edit" required />
+                  <div id="passwordHelpBlock" class="form-text">
+                    Wybrana książka:
+                  </div>
+                  <p id='bookTitleField-edit'></p>
                 </div>
                 <div class="row mb-3 align-items-center">
                   <label for="deposit" class="form-label">Kaucja</label>
@@ -458,7 +465,7 @@ function Rents() {
           </div>
         </div>
       </div >
-      <ChooseBookModal books={books} handleSelectBook={handleSelectBook} />
+      <ChooseBookModal books={books} selectedBook={selectedBook} setSelectedBook={setSelectedBook} handleSelectBook={handleSelectBook} modalExec={chooseBookModalExec} />
     </div>
   );
 }

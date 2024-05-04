@@ -46,7 +46,7 @@ async def get_one_rent(id: str):
         'name': rent['name'],
         'lastName': rent['lastName'],
         'schoolClass': rent['schoolClass'],
-        'bookTitle': rent['bookTitle'],
+        'bookCode': rent['bookCode'],
         'deposit': rent['deposit'],
         'rentDate': rent['rentDate'],
         'dueDate': rent['dueDate'],
