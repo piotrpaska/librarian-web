@@ -3,6 +3,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import $ from 'jquery';
 import api from './Api';
+import ChooseBookModal from './modals/ChooseBookModal';
+import RentsTable from './components/RentsTable';
 
 function Rents() {
 
@@ -11,23 +13,46 @@ function Rents() {
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [rents, setRents] = useState([]);
 
+  const [books, setBooks] = useState([]);
+
+  const [selectedBook, setSelectedBook] = useState([]);
+
+  const [chooseBookModalExec, setChooseBookModalExec] = useState('');
+
   const [selectedIdState, setSelectedIdState] = useState('');
 
-  // Define the function to fetch the rents from the API
-  const fetchRents = async () => {
-    const response = await api.get('/rent/')
-    setRents(response.data)
-  }
+  document.getElementById('rents-href').classList.add('active');
 
-  // Add the active class to the current link
   useEffect(() => {
-    document.getElementById('rents-href').classList.add('active');
-  }, [])
+    if (selectedBook.length === 0) {
+      $('#confirmBookSelection').prop('disabled', true);
+    } else {
+      $('#confirmBookSelection').prop('disabled', false);
+    }
+  }, [selectedBook]);
 
-  // Fetch the rents from the API
   useEffect(() => {
+    const fetchRents = async () => {
+      const response = await api.get('/rent/')
+      setRents(response.data)
+    }
     fetchRents()
   }, [])
+
+  const handleSelectBook = (code, title) => {
+    setSelectedBook([code, title]);
+    const btn = document.getElementById('book-' + code);
+    const buttons = document.querySelectorAll('button[id^="book-"]');
+    buttons.forEach(btn => {
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-secondary');
+    });
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-success');
+
+    document.getElementById('bookTitleField').innerHTML = title
+    document.getElementById('bookTitleField-edit').innerHTML = title
+  }
 
   // Handle the change of the deposit checkbox
   const handelIsDepositChange = (event) => {
@@ -35,7 +60,6 @@ function Rents() {
       setIsDeposit(event.target.checked);
       if (!isDeposit) {
         $('input[name="deposit"]').prop('disabled', false);
-        console.log(rentDate);
         const twoWeeksFromToday = new Date(rentDate);
         twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
         setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
@@ -74,7 +98,6 @@ function Rents() {
     const name = $('#name').val();
     const lastName = $('#lastName').val();
     const schoolClass = $('#schoolClass').val();
-    const bookTitle = $('#bookTitle').val();
     let deposit = $('#deposit').val()
     const rentalDate = rentDate;
     var maxDate = dueDate;
@@ -88,54 +111,56 @@ function Rents() {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
-      bookTitle: bookTitle,
+      bookCode: selectedBook[0],
       deposit: deposit,
       rentDate: rentalDate,
       dueDate: maxDate,
       isLongRent: isDeposit
     };
-    console.log(rentData);
     api.post('/rent/', rentData)
+    api.get('/book-rent/' + selectedBook[0])
     alert('Wypożyczenie dodane!')
     window.location.reload();
   }
 
   // Handle the end of the rent
-  const handleEndRent = (selectedId) => {
+  const handleEndRent = (selectedId, bookCode) => {
 
     const confirmDeleteModBtn = document.getElementById('confirmDeleteModConfirm');
-    const confirmDeleteModCancelBtn = document.getElementById('confirmDeleteModCancel');
 
     confirmDeleteModBtn.addEventListener('click', () => {
-      console.log(selectedId);
       api.delete(`/rent/${selectedId}`);
+      api.get('/book-return/' + bookCode)
       window.location.reload();
-    });
-
-    confirmDeleteModCancelBtn.addEventListener('click', () => {
-      console.log('Anulowano');
     });
   }
 
   // Handle the edit of the rent
   const handleEditRent = async (selectedId) => {
-
     setSelectedIdState(selectedId);
 
-    var rentData;
-
-    try {
-      const response = await api.get(`/one-rent/${selectedId}`);
-      rentData = response.data;
-      console.log(rentData);
-    } catch (error) {
-      console.log(error);
+    async function getBook(code) {
+      try {
+        const response = await api.get(`/book/${code}`);
+        console.log(response.data);
+        return response.data.title;
+      } catch (error) {
+        console.error(error);
+      }
     }
+
+    const response = await api.get(`/one-rent/${selectedId}`);
+    const rentData = response.data;
+
+    console.log(rentData);
 
     const name = $('#name-edit');
     const lastName = $('#lastName-edit');
     const schoolClass = $('#schoolClass-edit');
-    const bookTitle = $('#bookTitle-edit');
+
+    await setSelectedBook([rentData.bookCode, await getBook(rentData.bookCode)]);
+    document.getElementById('bookTitleField-edit').innerHTML = await getBook(rentData.bookCode);
+
     const isDeposit = $('#isDeposit-edit');
     const deposit = $('#deposit-edit');
     const rentalDate = $('#rentalDate-edit');
@@ -144,7 +169,6 @@ function Rents() {
     name.val(rentData.name);
     lastName.val(rentData.lastName);
     schoolClass.val(rentData.schoolClass);
-    bookTitle.val(rentData.bookTitle);
     isDeposit.prop('checked', rentData.isLongRent);
     rentalDate.val(rentData.rentDate);
 
@@ -163,13 +187,12 @@ function Rents() {
   const onSubmitEditForm = (e) => {
 
     const selectedId = selectedIdState;
-    
+
     e.preventDefault();
 
     const name = $('#name-edit').val();
     const lastName = $('#lastName-edit').val();
     const schoolClass = $('#schoolClass-edit').val();
-    const bookTitle = $('#bookTitle-edit').val();
     let deposit = $('#deposit-edit').val()
     const rentalDate = $('#rentalDate-edit').val();;
     var maxDate = $('#maxDate-edit').val();
@@ -183,7 +206,7 @@ function Rents() {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
-      bookTitle: bookTitle,
+      bookCode: selectedBook[0],
       deposit: deposit,
       rentDate: rentalDate,
       dueDate: maxDate,
@@ -205,10 +228,10 @@ function Rents() {
     tr = table.getElementsByTagName("tr");
 
     filterBy = document.getElementById('filterBy').value;
-  
+
     // Loop through all table rows, and hide those who don't match the search query
     for (i = 0; i < tr.length; i++) {
-      td = tr[i].getElementsByTagName("td")[filterBy-1];
+      td = tr[i].getElementsByTagName("td")[filterBy - 1];
       if (td) {
         txtValue = td.textContent || td.innerText;
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
@@ -221,7 +244,7 @@ function Rents() {
   }
 
   // Calculate the rent status
-  const calculateRentStatus = (rentRentalDate, rentDueDate, isLongRent) => { 
+  const calculateRentStatus = (rentRentalDate, rentDueDate, isLongRent) => {
     var rentDate, dueDate, currentDate, diff;
     rentDate = new Date(rentRentalDate).setHours(0, 0, 0, 0);
     currentDate = new Date().setHours(0, 0, 0, 0);
@@ -230,14 +253,14 @@ function Rents() {
       dueDate = new Date(rentDueDate).setHours(0, 0, 0, 0);
       if (currentDate > dueDate) {
         diff = currentDate - dueDate;
-        return `Opóźnienie: ${Math.floor((diff)/(24*3600*1000))} dni`;
+        return `Opóźnienie: ${Math.floor((diff) / (24 * 3600 * 1000))} dni`;
       } else {
         return 'OK';
       }
     } else {
       if (currentDate > rentDate) {
         diff = currentDate - rentDate;
-        return `Opóźnienie: ${Math.floor((diff)/(24*3600*1000))} dni`;
+        return `Opóźnienie: ${Math.floor((diff) / (24 * 3600 * 1000))} dni`;
       } else {
         return `OK`;
       }
@@ -247,7 +270,24 @@ function Rents() {
   const resetDates = () => {
     setRentDate(new Date().toISOString().slice(0, 10));
     setDueDate(new Date().toISOString().slice(0, 10));
+    const buttons = document.querySelectorAll('button[id^="book-"]');
+    buttons.forEach(btn => {
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-secondary');
+    });
+
+    setSelectedBook([]);
+    document.getElementById('bookTitleField').innerHTML = '';
   }
+
+  const fetchBooks = async () => {
+    const response = await api.get('/books/')
+    setBooks(response.data)
+  }
+
+  useEffect(() => {
+    fetchBooks()
+  }, [])
 
   return (
 
@@ -257,13 +297,13 @@ function Rents() {
         <div className='row'>
 
           <div className='col col-auto me-auto d-flex'>
-              <select class="form-select" aria-label="Default select example" id='filterBy'>
-                <option value="1" selected>Imię</option>
-                <option value="2">Nazwisko</option>
-                <option value="3">Klasa</option>
-                <option value="4">Tytuł książki</option>
-              </select>
-              <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
+            <select class="form-select" aria-label="Default select example" id='filterBy'>
+              <option value="1" selected>Imię</option>
+              <option value="2">Nazwisko</option>
+              <option value="3">Klasa</option>
+              <option value="4">Tytuł książki</option>
+            </select>
+            <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
           </div>
 
           <div className='col col-auto'>
@@ -275,62 +315,15 @@ function Rents() {
         </div>
       </div>
       <div className="container-fluid mt-4">
-        <table className="table table-striped" id='table'>
-          <thead>
-            <tr>
-              <th scope='col'>ID</th>
-              <th scope='col'>Imię</th>
-              <th scope='col'>Nazwisko</th>
-              <th scope='col'>Klasa</th>
-              <th scope='col'>Tytuł książki</th>
-              <th scope='col'>{'Kaucja (zł)'}</th>
-              <th scope='col'>Data wypożyczenia</th>
-              <th scope='col'>Termin</th>
-              <th scope='col'>Status</th>
-              <th scope='col'></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rents.slice(0).reverse().map((rent, index) => {
-              return (
-                <tr id={rent.id} key={rent.id}>
-                  <th scope='row'>{index + 1}</th>
-                  <td>{rent.name}</td>
-                  <td>{rent.lastName}</td>
-                  <td>{rent.schoolClass}</td>
-                  <td>{rent.bookTitle}</td>
-                  <td>{rent.deposit}</td>
-                  <td>{rent.rentDate}</td>
-                  <td>{rent.dueDate}</td>
-                  <td>{calculateRentStatus(rent.rentDate, rent.dueDate, rent.isLongRent)}</td>
-                  <td>
-                    <button className='btn btn-primary btn-sm me-1' data-bs-toggle="modal" data-bs-target="#confirmDeleteMod" id={rent.id} onClick={() => handleEndRent(rent.id)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
-                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-                      </svg>
-                    </button>
-                    <button className='btn btn-primary btn-sm ms-1' data-bs-toggle="modal" data-bs-target="#editRentModal" onClick={() => handleEditRent(rent.id)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              )
-
-            })}
-          </tbody>
-        </table>
+        {/* Render the rents table */}
+        <RentsTable rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
       </div>
-      
-      <div class="modal fade" tabindex="-1" id='confirmDeleteMod'>
+
+      <div class="modal fade" tabindex="-1" id='confirmDeleteMod' data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Potwierdzenie</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <p className='fw-medium'>Czy na pewno chcesz zakończyć to wypożyczenie?</p>
@@ -348,7 +341,7 @@ function Rents() {
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={resetDates}></button>
             </div>
             <form id='addRentForm' onSubmit={onSubmitAddForm}>
               <div class="modal-body text-start">
@@ -366,8 +359,18 @@ function Rents() {
                   <input type="text" class="form-control" id="schoolClass" required />
                 </div>
                 <div class="mb-3">
-                  <label for="bookTitle" class="form-label">Tytuł książki</label>
-                  <input type="text" class="form-control" id="bookTitle" required />
+                  <div class="row">
+                    <div className='col-auto'>
+                      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#chooseBookModal" href="#lost"
+                        onClick={() => { fetchBooks(); setChooseBookModalExec('addRent') }}>Wybierz książkę</button>
+                    </div>
+                    <div className='col'>
+                      <div id="passwordHelpBlock" class="form-text">
+                        Wybrana książka:
+                      </div>
+                      <p id='bookTitleField'></p>
+                    </div>
+                  </div>
                 </div>
                 <div class="row mb-3 align-items-center">
                   <label for="deposit" class="form-label">Kaucja</label>
@@ -394,20 +397,20 @@ function Rents() {
 
               </div>
               <div class="modal-footer">
-                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={resetDates} >Anuluj</button>
+                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={() => { resetDates(); setSelectedBook([]); }} >Anuluj</button>
                 <button type="submit" id='modalSubmit' class="btn btn-primary">Zatwierdź</button>
               </div>
             </form>
           </div>
         </div>
       </div>
-      
-      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="exampleModalLabel">Edycja wypożyczenia</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={resetDates}></button>
             </div>
             <form id='editRentForm' onSubmit={onSubmitEditForm}>
               <div class="modal-body text-start">
@@ -425,8 +428,10 @@ function Rents() {
                   <input type="text" class="form-control" id="schoolClass-edit" required />
                 </div>
                 <div class="mb-3">
-                  <label for="bookTitle" class="form-label">Tytuł książki</label>
-                  <input type="text" class="form-control" id="bookTitle-edit" required />
+                  <div id="passwordHelpBlock" class="form-text">
+                    Wybrana książka:
+                  </div>
+                  <p id='bookTitleField-edit'></p>
                 </div>
                 <div class="row mb-3 align-items-center">
                   <label for="deposit" class="form-label">Kaucja</label>
@@ -444,7 +449,7 @@ function Rents() {
                 </div>
                 <div class="mb-3">
                   <label for="rentalDate" class="form-label">Data wypożyczenia</label>
-                  <input type="date" class="form-control" id="rentalDate-edit" name='rentDate' value={rentDate} onChange={handelIsDepositChange}/>
+                  <input type="date" class="form-control" id="rentalDate-edit" name='rentDate' value={rentDate} onChange={handelIsDepositChange} />
                 </div>
                 <div class="mb-3">
                   <label for="maxDate" class="form-label">Termin</label>
@@ -460,6 +465,7 @@ function Rents() {
           </div>
         </div>
       </div >
+      <ChooseBookModal books={books} selectedBook={selectedBook} setSelectedBook={setSelectedBook} handleSelectBook={handleSelectBook} modalExec={chooseBookModalExec} />
     </div>
   );
 }

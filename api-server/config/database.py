@@ -4,3 +4,4 @@ client = MongoClient("mongodb+srv://librarianWeb:3W6MO4tXfebbTeXX@librarian.3akh
 db = client["Prymus"]
 rentsCollection = db["activeRents"]
 historyCollection = db["historyRents"]
+booksCollection = db["booksList"]

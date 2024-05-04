@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from './Api';
+import HistoryTable from './components/HistoryTable';
 
 function History() {
 
@@ -62,36 +63,7 @@ function History() {
         </div>
       </div>
       <div className="container-fluid mt-4">
-        <table className="table table-striped" id='table'>
-          <thead>
-            <tr>
-              <th scope='col'>ID</th>
-              <th scope='col'>Imię</th>
-              <th scope='col'>Nazwisko</th>
-              <th scope='col'>Klasa</th>
-              <th scope='col'>Tytuł książki</th>
-              <th scope='col'>{'Kaucja (zł)'}</th>
-              <th scope='col'>Data wypożyczenia</th>
-              <th scope='col'>Termin</th>
-              <th scope='col'>Data zwrotu</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rents.slice(0).reverse().map((doc, index) => (
-              <tr key={doc.id}>
-                <th scope='row'>{index + 1}</th>
-                <td>{doc.name}</td>
-                <td>{doc.lastName}</td>
-                <td>{doc.schoolClass}</td>
-                <td>{doc.bookTitle}</td>
-                <td>{doc.deposit}</td>
-                <td>{doc.rentDate}</td>
-                <td>{doc.dueDate}</td>
-                <td>{doc.returnDate}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <HistoryTable rents={rents} />
       </div>
     </div>
   );
