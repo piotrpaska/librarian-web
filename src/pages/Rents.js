@@ -5,6 +5,7 @@ import $ from 'jquery';
 import api from './Api';
 import ChooseBookModal from './modals/ChooseBookModal';
 import RentsTable from './components/RentsTable';
+import { Container, Row, Col, Form, Button, Modal } from 'react-bootstrap';
 
 function Rents() {
 
@@ -17,20 +18,33 @@ function Rents() {
 
   const [selectedBook, setSelectedBook] = useState([]);
 
-  const [chooseBookModalExec, setChooseBookModalExec] = useState('');
+  const [selectedIdToEdit, setSelectedIdToEdit] = useState('');
 
-  const [selectedIdState, setSelectedIdState] = useState('');
+  //////////////////////////////// Modal states ////////////////////////////////
+  const [showEndRent, setShowEndRent] = useState(false);
+
+  const handleClose_endRent = () => setShowEndRent(false);
+  const handleShow_endRent = () => setShowEndRent(true);
+
+  const [showAddRent, setShowAddRent] = useState(false);
+  const handleClose_addRent = () => setShowAddRent(false);
+  const handleShow_addRent = () => setShowAddRent(true);
+
+  const [showEditRent, setShowEditRent] = useState(false);
+  const handleClose_editRent = () => setShowEditRent(false);
+  const handleShow_editRent = () => setShowEditRent(true);
+
+  const [showBookModal, setShowBookModal] = useState(false);
+  const handleCloseBookModal = () => setShowBookModal(false);
+  const handleShowBookModal = () => setShowBookModal(true);
+  /////////////////////////////////////////////////////////////////////////////
+
+  const [rentToDelete, setRentToDelete] = useState([]);
 
   document.getElementById('rents-href').classList.add('active');
 
-  useEffect(() => {
-    if (selectedBook.length === 0) {
-      $('#confirmBookSelection').prop('disabled', true);
-    } else {
-      $('#confirmBookSelection').prop('disabled', false);
-    }
-  }, [selectedBook]);
-
+  const [isBookChosen, setIsBookChosen] = useState(false);
+  
   useEffect(() => {
     const fetchRents = async () => {
       const response = await api.get('/rent/')
@@ -38,6 +52,24 @@ function Rents() {
     }
     fetchRents()
   }, [])
+
+  useEffect(() => {
+    if (document.getElementById('bookTitleField')) {
+      if (selectedBook.length === 0) {
+        document.getElementById('bookTitleField').innerHTML = '';
+      } else {
+        document.getElementById('bookTitleField').innerHTML = selectedBook[1];
+      }
+    }
+  }, [showAddRent]);
+
+  useEffect(() => {
+    if (selectedBook.length === 0) {
+      setIsBookChosen(false);
+    } else {
+      setIsBookChosen(true);
+    }
+  }, [selectedBook]);
 
   const handleSelectBook = (code, title) => {
     setSelectedBook([code, title]);
@@ -49,47 +81,36 @@ function Rents() {
     });
     btn.classList.remove('btn-secondary');
     btn.classList.add('btn-success');
-
-    document.getElementById('bookTitleField').innerHTML = title
-    document.getElementById('bookTitleField-edit').innerHTML = title
   }
 
-  // Handle the change of the deposit checkbox
-  const handelIsDepositChange = (event) => {
-    if (event.target.name === 'isDeposit') {
-      setIsDeposit(event.target.checked);
-      if (!isDeposit) {
-        $('input[name="deposit"]').prop('disabled', false);
+  useEffect(() => {
+    if (isDeposit) {
+      const twoWeeksFromToday = new Date(rentDate);
+      twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
+      setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
+    } else {
+      setDueDate(rentDate);
+    }
+  }, [isDeposit]);
+
+  useEffect(() => {
+    if (rentDate != dueDate) {
+        setIsDeposit(true);
         const twoWeeksFromToday = new Date(rentDate);
         twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
         setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
-      } else {
-        $('input[name="deposit"]').prop('disabled', true);
-        setDueDate(rentDate);
-      }
-    } else if (event.target.name === 'dueDate') {
-      const val = event.target.value;
-      setDueDate(val);
-      if (val !== rentDate) {
-        setIsDeposit(true);
-        $('input[name="deposit"]').prop('disabled', false);
-        $('input[name="isDeposit"]').prop('checked', true);
-      } else {
-        setIsDeposit(false);
-        $('input[name="deposit"]').prop('disabled', true);
-        $('input[name="isDeposit"]').prop('checked', false);
-      }
-    } else if (event.target.name === 'rentDate') {
-      setRentDate(event.target.value);
-      if (isDeposit) {
-        const twoWeeksFromToday = new Date(event.target.value);
-        twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
-        setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
-      } else {
-        setDueDate(event.target.value);
-      }
+    } else {
+      setIsDeposit(false);
     }
-  };
+  }, [rentDate]);
+
+  useEffect(() => {
+    if (rentDate != dueDate) {
+      setIsDeposit(true);
+    } else {
+      setIsDeposit(false);
+    }
+  }, [dueDate]);
 
   // Handle the submit of the add form
   function onSubmitAddForm(e) {
@@ -126,18 +147,21 @@ function Rents() {
   // Handle the end of the rent
   const handleEndRent = (selectedId, bookCode) => {
 
-    const confirmDeleteModBtn = document.getElementById('confirmDeleteModConfirm');
+    handleShow_endRent(true);
 
-    confirmDeleteModBtn.addEventListener('click', () => {
-      api.delete(`/rent/${selectedId}`);
-      api.get('/book-return/' + bookCode)
-      window.location.reload();
-    });
+    setRentToDelete([selectedId, bookCode]);
+  }
+
+  const handleEndRentConfirm = () => {
+    api.delete(`/rent/${rentToDelete[0]}`);
+    api.get('/book-return/' + rentToDelete[1]);
+    setRentToDelete([]);
+    window.location.reload();
   }
 
   // Handle the edit of the rent
   const handleEditRent = async (selectedId) => {
-    setSelectedIdState(selectedId);
+    setSelectedIdToEdit(selectedId);
 
     async function getBook(code) {
       try {
@@ -163,21 +187,19 @@ function Rents() {
 
     const isDeposit = $('#isDeposit-edit');
     const deposit = $('#deposit-edit');
-    const rentalDate = $('#rentalDate-edit');
-    const maxDate = $('#maxDate-edit');
-
     name.val(rentData.name);
     lastName.val(rentData.lastName);
     schoolClass.val(rentData.schoolClass);
     isDeposit.prop('checked', rentData.isLongRent);
-    rentalDate.val(rentData.rentDate);
 
-    if (!rentData.isLongRent) {
+    setRentDate(rentData.rentDate);
+
+    if (rentData.isLongRent === false) {
       deposit.val('')
       deposit.prop('disabled', true);
-      parseInt(maxDate.val(rentData.rentDate));
+      setDueDate(new Date(rentData.rentDate).toISOString().slice(0, 10));
     } else {
-      maxDate.val(rentData.dueDate);
+      setDueDate(new Date(rentData.dueDate).toISOString().slice(0, 10));
       deposit.prop('disabled', false);
       deposit.val(rentData.deposit);
     }
@@ -186,16 +208,18 @@ function Rents() {
   // Handle the submit of the edit form
   const onSubmitEditForm = (e) => {
 
-    const selectedId = selectedIdState;
+    const selectedId = selectedIdToEdit;
+
+    console.log(selectedId);
 
     e.preventDefault();
 
-    const name = $('#name-edit').val();
-    const lastName = $('#lastName-edit').val();
-    const schoolClass = $('#schoolClass-edit').val();
-    let deposit = $('#deposit-edit').val()
-    const rentalDate = $('#rentalDate-edit').val();;
-    var maxDate = $('#maxDate-edit').val();
+    const name = document.getElementById('name-edit').value;
+    const lastName = document.getElementById('lastName-edit').value;
+    const schoolClass = document.getElementById('schoolClass-edit').value;
+    let deposit = document.getElementById('deposit-edit').value;
+    const rentalDate = document.getElementById('rentDate-edit').value;
+    var maxDate = document.getElementById('maxDate-edit').value;
 
     if (!isDeposit) {
       deposit = 'Brak';
@@ -206,12 +230,13 @@ function Rents() {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
-      bookCode: selectedBook[0],
       deposit: deposit,
       rentDate: rentalDate,
       dueDate: maxDate,
       isLongRent: isDeposit
     };
+
+    console.log(rentData);
 
     api.put(`/rent/${selectedId}`, rentData)
     alert('Wypożyczenie zaktualizowane!')
@@ -267,17 +292,23 @@ function Rents() {
     }
   }
 
-  const resetDates = () => {
+  const resetFormStates = () => {
     setRentDate(new Date().toISOString().slice(0, 10));
     setDueDate(new Date().toISOString().slice(0, 10));
+    setIsDeposit(false);
     const buttons = document.querySelectorAll('button[id^="book-"]');
     buttons.forEach(btn => {
       btn.classList.remove('btn-success');
       btn.classList.add('btn-secondary');
-    });
+  });
 
     setSelectedBook([]);
-    document.getElementById('bookTitleField').innerHTML = '';
+    if (document.getElementById('bookTitleField')) {
+      document.getElementById('bookTitleField').innerHTML = '';
+    }
+    if (document.getElementById('bookTitleField-edit')) {
+      document.getElementById('bookTitleField-edit').innerHTML = '';
+    }
   }
 
   const fetchBooks = async () => {
@@ -291,182 +322,195 @@ function Rents() {
 
   return (
 
-    <div className="container-fluid mt-2 text-center px-3">
-      <h1 class="display-5 text-start ms-3 border-bottom">Wypożyczenia</h1>
-      <div className='container-fluid mt-4'>
-        <div className='row'>
+    <Container fluid className="mt-2 text-center px-3">
+      <h1 className="display-5 text-start ms-3 border-bottom">Wypożyczenia</h1>
+      <Container fluid className='mt-4'>
+        <Row>
 
-          <div className='col col-auto me-auto d-flex'>
-            <select class="form-select" aria-label="Default select example" id='filterBy'>
+          <Col className='col-auto me-auto d-flex'>
+            <Form.Select aria-label="Default select example" id='filterBy'>
               <option value="1" selected>Imię</option>
               <option value="2">Nazwisko</option>
               <option value="3">Klasa</option>
               <option value="4">Tytuł książki</option>
-            </select>
-            <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
-          </div>
+            </Form.Select>
+            <Form.Control className='mx-2' type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
+          </Col>
 
-          <div className='col col-auto'>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addRentModal">
+          <Col className='col col-auto'>
+            <Button type="button" variant='success' onClick={handleShow_addRent}>
               Nowe wypożyczenie
-            </button>
-          </div>
+            </Button>
+          </Col>
 
-        </div>
-      </div>
-      <div className="container-fluid mt-4">
+        </Row>
+      </Container>
+      <Container fluid className="mt-4">
         {/* Render the rents table */}
-        <RentsTable rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
-      </div>
+        <RentsTable setShowEditRent={setShowEditRent} rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
+      </Container>
 
-      <div class="modal fade" tabindex="-1" id='confirmDeleteMod' data-keyboard="false" data-backdrop="static">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Potwierdzenie</h5>
-            </div>
-            <div class="modal-body">
-              <p className='fw-medium'>Czy na pewno chcesz zakończyć to wypożyczenie?</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id='confirmDeleteModCancel'>Anuluj</button>
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id='confirmDeleteModConfirm'>Zakończ</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal fade" id="addRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={resetDates}></button>
-            </div>
-            <form id='addRentForm' onSubmit={onSubmitAddForm}>
-              <div class="modal-body text-start">
+      <Modal
+        show={showEndRent}
+        onHide={handleClose_endRent}
+        backdrop="static"
+        keyboard={false}
+        id='confirmDeleteMod'
+      >
+        <Modal.Header>
+          <Modal.Title>Potwierdzenie</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className='fw-medium'>Czy na pewno chcesz zakończyć to wypożyczenie?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button type="button" variant='secondary' onClick={handleClose_endRent}>Anuluj</Button>
+          <Button type="button" variant='primary' data-bs-dismiss="modal" onClick={() => { handleClose_endRent(); handleEndRentConfirm(); }}>Zakończ</Button>
+        </Modal.Footer>
+      </Modal>
 
-                <div class="mb-3">
-                  <label for="name" class="form-label">Imię</label>
-                  <input type="text" class="form-control" id="name" required />
-                </div>
-                <div class="mb-3">
-                  <label for="lastName" class="form-label">Nazwisko</label>
-                  <input type="text" class="form-control" id="lastName" required />
-                </div>
-                <div class="mb-3">
-                  <label for="schoolClass" class="form-label">Klasa</label>
-                  <input type="text" class="form-control" id="schoolClass" required />
-                </div>
-                <div class="mb-3">
-                  <div class="row">
-                    <div className='col-auto'>
-                      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#chooseBookModal" href="#lost"
-                        onClick={() => { fetchBooks(); setChooseBookModalExec('addRent') }}>Wybierz książkę</button>
-                    </div>
-                    <div className='col'>
-                      <div id="passwordHelpBlock" class="form-text">
-                        Wybrana książka:
-                      </div>
-                      <p id='bookTitleField'></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="row mb-3 align-items-center">
-                  <label for="deposit" class="form-label">Kaucja</label>
-                  <div className='col pe-0'>
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" value={isDeposit} id="isDeposit" name='isDeposit' onChange={handelIsDepositChange} />
-                      <label class="form-check-label" for="flexCheckDefault">
-                        Wypożyczenie z kaucją?
-                      </label>
-                    </div>
-                  </div>
-                  <div className='col ps-0'>
-                    <input type="number" class="form-control" id="deposit" name='deposit' placeholder='Tylko cyfra' disabled required />
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="rentalDate" class="form-label">Data wypożyczenia</label>
-                  <input type="date" class="form-control" id="rentDate" name='rentDate' value={rentDate} onChange={handelIsDepositChange} />
-                </div>
-                <div class="mb-3">
-                  <label for="maxDate" class="form-label">Termin</label>
-                  <input type="date" class="form-control" id="maxDate" name='dueDate' value={dueDate} onChange={handelIsDepositChange} />
-                </div>
+      <Modal
+        id="addRentModal"
+        show={showAddRent}
+        onHide={handleClose_addRent}
+        backdrop="static"
+        keyboard={false}
+        centered
+      >
+        <Modal.Header>
+          <h1 className="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
+        </Modal.Header>
+        <Form onSubmit={onSubmitAddForm}>
+          <Modal.Body className="text-start">
 
-              </div>
-              <div class="modal-footer">
-                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={() => { resetDates(); setSelectedBook([]); }} >Anuluj</button>
-                <button type="submit" id='modalSubmit' class="btn btn-primary">Zatwierdź</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal fade" id="editRentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Edycja wypożyczenia</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={resetDates}></button>
-            </div>
-            <form id='editRentForm' onSubmit={onSubmitEditForm}>
-              <div class="modal-body text-start">
-
-                <div class="mb-3">
-                  <label for="name" class="form-label">Imię</label>
-                  <input type="text" class="form-control" id="name-edit" required />
-                </div>
-                <div class="mb-3">
-                  <label for="lastName" class="form-label">Nazwisko</label>
-                  <input type="text" class="form-control" id="lastName-edit" required />
-                </div>
-                <div class="mb-3">
-                  <label for="schoolClass" class="form-label">Klasa</label>
-                  <input type="text" class="form-control" id="schoolClass-edit" required />
-                </div>
-                <div class="mb-3">
-                  <div id="passwordHelpBlock" class="form-text">
+            <Form.Group className="mb-3">
+              <Form.Label>Imię</Form.Label>
+              <Form.Control type="text" id="name" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nazwisko</Form.Label>
+              <Form.Control type="text" id="lastName" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="schoolClass" >Klasa</Form.Label>
+              <Form.Control type="text" id="schoolClass" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Row>
+                <Col className='col-auto'>
+                  <Button type="button" variant='outline-info'
+                    onClick={() => { fetchBooks(); handleShowBookModal(); handleClose_addRent(); }}>Wybierz książkę</Button>
+                </Col>
+                <Col>
+                  <Form.Text muted>
                     Wybrana książka:
-                  </div>
-                  <p id='bookTitleField-edit'></p>
-                </div>
-                <div class="row mb-3 align-items-center">
-                  <label for="deposit" class="form-label">Kaucja</label>
-                  <div className='col pe-0'>
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" value={isDeposit} id="isDeposit-edit" name='isDeposit' onChange={handelIsDepositChange} />
-                      <label class="form-check-label" for="flexCheckDefault">
-                        Wypożyczenie z kaucją?
-                      </label>
-                    </div>
-                  </div>
-                  <div className='col ps-0'>
-                    <input type="number" class="form-control" id="deposit-edit" name='deposit' placeholder='Tylko cyfra' disabled required />
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="rentalDate" class="form-label">Data wypożyczenia</label>
-                  <input type="date" class="form-control" id="rentalDate-edit" name='rentDate' value={rentDate} onChange={handelIsDepositChange} />
-                </div>
-                <div class="mb-3">
-                  <label for="maxDate" class="form-label">Termin</label>
-                  <input type="date" class="form-control" id="maxDate-edit" name='dueDate' value={dueDate} onChange={handelIsDepositChange} />
-                </div>
+                  </Form.Text>
+                  <p id='bookTitleField'></p>
+                </Col>
+              </Row>
+            </Form.Group>
+            <Form.Group className="row mb-3 align-items-center">
+              <Form.Label>Kaucja</Form.Label>
+              <Col className='col pe-0'>
+                <Form.Check
+                  inline
+                  label="Wypożyczenie z kaucją?"
+                  type="checkbox"
+                  id="isDeposit"
+                  name='isDeposit'
+                  onChange={(e) => setIsDeposit(e.target.checked)}
+                  checked={isDeposit}
+                />
+              </Col>
+              <Col className='col ps-0'>
+                <Form.Control type="number" id="deposit" name='deposit' placeholder='Tylko cyfra' disabled={!isDeposit} required />
+              </Col>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="rentalDate">Data wypożyczenia</Form.Label>
+              <Form.Control type="date" id="rentDate" name='rentDate' value={rentDate} onChange={(e) => setRentDate(e.target.value)} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="maxDate">Termin</Form.Label>
+              <Form.Control type="date" id="maxDate" name='dueDate' value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            </Form.Group>
 
-              </div>
-              <div class="modal-footer">
-                <button type="button" id='modalCancel' class="btn btn-secondary" data-bs-dismiss="modal" onClick={resetDates}>Anuluj</button>
-                <button type="submit" id='modalSubmit' class="btn btn-primary">Zatwierdź</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div >
-      <ChooseBookModal books={books} selectedBook={selectedBook} setSelectedBook={setSelectedBook} handleSelectBook={handleSelectBook} modalExec={chooseBookModalExec} />
-    </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button type="button" id='modalCancel' variant='secondary' onClick={() => { resetFormStates(); setSelectedBook([]); handleClose_addRent(); }} >Anuluj</Button>
+            <Button type="submit" id='modalSubmit' variant='primary'>Zatwierdź</Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+
+      <Modal
+        id="editRentModal"
+        show={showEditRent}
+        onHide={handleClose_editRent}
+        backdrop="static"
+        keyboard={false}
+        centered
+      >
+        <Modal.Header>
+          <h1 className="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
+        </Modal.Header>
+        <Form onSubmit={onSubmitEditForm}>
+          <Modal.Body className="text-start">
+
+            <Form.Group className="mb-3">
+              <Form.Label>Imię</Form.Label>
+              <Form.Control type="text" id="name-edit" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nazwisko</Form.Label>
+              <Form.Control type="text" id="lastName-edit" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="schoolClass" >Klasa</Form.Label>
+              <Form.Control type="text" id="schoolClass-edit" required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Text muted>
+                Wybrana książka:
+              </Form.Text>
+              <p id='bookTitleField-edit'></p>
+            </Form.Group>
+            <Form.Group className="row mb-3 align-items-center">
+              <Form.Label>Kaucja</Form.Label>
+              <Col className='col pe-0'>
+                <Form.Check
+                  inline
+                  label="Wypożyczenie z kaucją?"
+                  type="checkbox"
+                  id="isDeposit-edit"
+                  name='isDeposit'
+                  onChange={(e) => setIsDeposit(e.target.checked)}
+                  checked={isDeposit}
+                />
+              </Col>
+              <Col className='col ps-0'>
+                <Form.Control type="number" id="deposit-edit" name='deposit' placeholder='Tylko cyfra' disabled={!isDeposit} required />
+              </Col>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="rentalDate">Data wypożyczenia</Form.Label>
+              <Form.Control type="date" id="rentDate-edit" name='rentDate' value={rentDate} onChange={(e) => setRentDate(e.target.value)} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="maxDate">Termin</Form.Label>
+              <Form.Control type="date" id="maxDate-edit" name='dueDate' value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            </Form.Group>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button type="button" id='modalCancel-edit' variant='secondary' onClick={() => { resetFormStates(); setSelectedBook([]); handleClose_editRent(); }}>Anuluj</Button>
+            <Button type="submit" id='modalSubmit-edit' variant='primary'>Zatwierdź</Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+      <ChooseBookModal isBookChosen={isBookChosen} show={showBookModal} showEdit={handleShow_editRent}
+        showAdd={handleShow_addRent} setShow={setShowBookModal} books={books} selectedBook={selectedBook} setSelectedBook={setSelectedBook} handleSelectBook={handleSelectBook} />
+    </Container>
   );
 }
 

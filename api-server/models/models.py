@@ -9,3 +9,12 @@ class RentBase(BaseModel):
     rentDate: str
     dueDate: str
     isLongRent: bool
+
+class EditRentBase(BaseModel):
+    name: str
+    lastName: str
+    schoolClass: str
+    deposit: str
+    rentDate: str
+    dueDate: str
+    isLongRent: bool

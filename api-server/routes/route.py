@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from models.models import RentBase
+from models.models import RentBase, EditRentBase
 from config.database import rentsCollection, historyCollection, booksCollection
 from schemas.rent import serial_rents
 from schemas.history import serial_history
@@ -58,7 +58,7 @@ async def get_one_rent(id: str):
     return rent
 
 @router.put("/rent/{id}")
-def update_rent(id: str, rent: RentBase):
+def update_rent(id: str, rent: EditRentBase):
     rentsCollection.update_one({'_id': ObjectId(id)}, {'$set': dict(rent)})
 
 @router.get("/books/")
