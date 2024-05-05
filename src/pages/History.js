@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from './Api';
 import HistoryTable from './components/HistoryTable';
+import { Col, Container, Row, Form } from 'react-bootstrap';
 
 function History() {
 
@@ -47,25 +48,25 @@ function History() {
 
   return (
 
-    <div className="container-fluid mt-2 text-center px-3">
+    <Container fluid className="mt-2 text-center px-3">
       <h1 className="display-5 text-start ms-3 border-bottom">Historia</h1>
-      <div className='container-fluid mt-4'>
-        <div className='row'>
-          <div className='col col-auto me-auto d-flex'>
-            <select class="form-select" aria-label="Default select example" id='filterBy'>
+      <Container fluid className='mt-4'>
+        <Row>
+          <Col className='col-auto me-auto d-flex'>
+            <Form.Select aria-label="Default select example" id='filterBy'>
               <option value="1" selected>Imię</option>
               <option value="2">Nazwisko</option>
               <option value="3">Klasa</option>
               <option value="4">Tytuł książki</option>
-            </select>
-            <input class="form-control mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
-          </div>
-        </div>
-      </div>
-      <div className="container-fluid mt-4">
+            </Form.Select>
+            <Form.Control className="mx-2" type="search" placeholder="Szukaj" aria-label="Search" id='searchBar' onKeyUp={() => search()} />
+          </Col>
+        </Row>
+      </Container>
+      <Container fluid className="mt-4">
         <HistoryTable rents={rents} />
-      </div>
-    </div>
+      </Container>
+    </Container>
   );
 }
 

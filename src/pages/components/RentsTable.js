@@ -2,10 +2,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from "../Api";
 import React, { useEffect } from 'react';
+import { Table } from 'react-bootstrap';
 
 export default function RentsTable({ rents, handleEndRent, handleEditRent, calculateRentStatus, setShowEditRent }) {
   return (
-    <table className="table table-striped" id='table'>
+    <Table striped id='table'>
       <thead>
         <tr>
           <th scope='col'>ID</th>
@@ -23,7 +24,7 @@ export default function RentsTable({ rents, handleEndRent, handleEditRent, calcu
       <tbody>
         {rents.slice(0).reverse().map((rent, index) => <RenderRentRow setShowEditRent={setShowEditRent} rent={rent} index={index} handleEditRent={handleEditRent} handleEndRent={handleEndRent} calculateRentStatus={calculateRentStatus} />)}
       </tbody>
-    </table>
+    </Table>
   )
 }
 

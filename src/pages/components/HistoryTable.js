@@ -2,10 +2,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from "../Api";
 import React, { useEffect } from 'react';
+import { Table } from 'react-bootstrap';
 
 export default function HistoryTable({ rents }) {
     return (
-        <table className="table table-striped" id='table'>
+        <Table striped id='table'>
           <thead>
             <tr>
               <th scope='col'>ID</th>
@@ -22,7 +23,7 @@ export default function HistoryTable({ rents }) {
           <tbody>
             {rents.slice(0).reverse().map((doc, index) => <HistoryTableRow rent={doc} index={index} />)}
           </tbody>
-        </table>
+        </Table>
     )
 }
 
