@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Web site created using create-react-app" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
       Only files inside the `public` folder can be referenced from the HTML.
@@ -24,47 +22,60 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#" onclick="window.location.reload()">
-          <img src="%PUBLIC_URL%/images/logo/logo.png" alt="" width="30" height="30">
-          Librarian | Prymus
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/rents" id="rents-href">Wypożyczenia</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/history" id="history-href">Historia wypożyczeń</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/books" id="books-href">Spis książek</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Moje konto
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Profil</a></li>
-                <li><a class="dropdown-item" href="#">Ustawienia</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Wyloguj</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
+  <title>React App</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary" id="navbar">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#" onclick="window.location.reload()">
+        <img src="%PUBLIC_URL%/images/logo/logo.png" alt="" width="30" height="30">
+        Librarian | Prymus
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/rents" id="rents-href">Wypożyczenia</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/history" id="history-href">Historia wypożyczeń</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/books" id="books-href">Spis książek</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Moje konto
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Profil</a></li>
+              <li><a class="dropdown-item" href="#">Ustawienia</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" id="logOutBtn">Wyloguj</a></li>
+            </ul>
+          </li>
+        </ul>
       </div>
-    </nav>
-    <div id="root"></div>
-    <!--
+    </div>
+  </nav>
+  <!-- It's only for login page -->
+  <nav class="navbar bg-body-tertiary" id="login-page-navbar" style="display: none;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="%PUBLIC_URL%/images/logo/logo.png" alt="Logo" width="30" height="30"
+          class="d-inline-block align-text-top" />
+        Librarian | Prymus
+      </a>
+    </div>
+  </nav>
+  <div id="root"></div>
+  <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
 
@@ -74,5 +85,5 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-  </body>
+</body>
 </html>
