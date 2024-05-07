@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
 import {  signInWithEmailAndPassword   } from 'firebase/auth';
 import { auth } from '../components/firebase';
-import { Navigate, useNavigate } from 'react-router-dom' 
-import { doc } from 'firebase/firestore';
+import { Navigate } from 'react-router-dom';
 
 export default function Login({ user }) {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [alert, setAlert] = useState([]);
@@ -33,8 +31,7 @@ export default function Login({ user }) {
     setAlert([]);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        console.log(userCredential.user)
-        navigate('/rents'); 
+        console.log(userCredential.user);
       })
       .catch((error) => {
         setAlert(['danger', 'Nieprawidłowe dane logowania']);
@@ -48,7 +45,7 @@ export default function Login({ user }) {
 
   return (
     <Container fluid='sm' className='text-center mt-5 shadow-lg p-5 mb-5 bg-dark rounded'>
-      <h1>Zaloguj</h1>
+      <h1>Logowanie</h1>
       <h6>PANEL BIBLIOTEKARZA</h6>
       <Container className='mt-4 mb-3' id='alerts'></Container>
       <Form
@@ -62,7 +59,7 @@ export default function Login({ user }) {
           <Form.Label>Password</Form.Label>
           <Form.Control type='password' placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} required/>
         </Form.Group>
-        <Button variant='primary' onClick={login}>Submit</Button>
+        <Button variant='primary' onClick={login}>Zaloguj</Button>
       </Form>
     </Container>
   )
