@@ -3,7 +3,6 @@ import { Button, Container, Form, Modal } from 'react-bootstrap';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../components/firebase';
 import { Navigate } from 'react-router-dom';
-import { set } from 'firebase/database';
 
 export default function Login({ user }) {
   const [email, setEmail] = useState('');

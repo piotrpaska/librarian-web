@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import { Alert, Button, Container, Modal, Table } from 'react-bootstrap';
+import { Alert, Button, Modal, Table } from 'react-bootstrap';
 
 function ChooseBookModal({ books, setSelectedBook, handleSelectBook, selectedBook, show, setShow, showAdd, isBookChosen }) {
 

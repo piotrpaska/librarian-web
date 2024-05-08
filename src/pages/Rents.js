@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import $ from 'jquery';
 import api from './Api';
 import ChooseBookModal from './modals/ChooseBookModal';
 import RentsTable from './components/RentsTable';
@@ -35,16 +34,20 @@ function Rents() {
   const handleShow_editRent = () => setShowEditRent(true);
 
   const [showBookModal, setShowBookModal] = useState(false);
-  const handleCloseBookModal = () => setShowBookModal(false);
+  //const handleCloseBookModal = () => setShowBookModal(false);
   const handleShowBookModal = () => setShowBookModal(true);
   /////////////////////////////////////////////////////////////////////////////
+  const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [schoolClass, setSchoolClass] = useState('');
+  const [deposit, setDeposit] = useState('');
 
   const [rentToDelete, setRentToDelete] = useState([]);
 
   document.getElementById('rents-href').classList.add('active');
 
   const [isBookChosen, setIsBookChosen] = useState(false);
-  
+
   useEffect(() => {
     const fetchRents = async () => {
       const response = await api.get('/rent/')
@@ -94,19 +97,39 @@ function Rents() {
   }, [isDeposit]);
 
   useEffect(() => {
-    if (rentDate != dueDate) {
-        setIsDeposit(true);
-        const twoWeeksFromToday = new Date(rentDate);
+    if (rentDate > new Date().toISOString().slice(0, 10)) {
+      setRentDate(new Date().toISOString().slice(0, 10));
+      if (isDeposit) {
+        const twoWeeksFromToday = new Date(new Date().toISOString().slice(0, 10));
         twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
         setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
+      } else {
+        setDueDate(new Date().toISOString().slice(0, 10));
+      }
     } else {
-      setIsDeposit(false);
+      if (rentDate !== dueDate) {
+        if (rentDate > dueDate) {
+          setDueDate(rentDate);
+        } else {
+          setIsDeposit(true);
+          const twoWeeksFromToday = new Date(rentDate);
+          twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
+          setDueDate(twoWeeksFromToday.toISOString().slice(0, 10));
+        }
+      } else {
+        setIsDeposit(false);
+      }
     }
   }, [rentDate]);
 
   useEffect(() => {
-    if (rentDate != dueDate) {
-      setIsDeposit(true);
+    if (rentDate !== dueDate) {
+      if (rentDate > dueDate) {
+        setDueDate(rentDate);
+        setIsDeposit(false);
+      } else {
+        setIsDeposit(true);
+      }
     } else {
       setIsDeposit(false);
     }
@@ -116,26 +139,14 @@ function Rents() {
   function onSubmitAddForm(e) {
     e.preventDefault();
 
-    const name = $('#name').val();
-    const lastName = $('#lastName').val();
-    const schoolClass = $('#schoolClass').val();
-    let deposit = $('#deposit').val()
-    const rentalDate = rentDate;
-    var maxDate = dueDate;
-
-    if (!isDeposit) {
-      deposit = 'Brak';
-      maxDate = 'Wypożyczenie jednodniowe';
-    }
-
     const rentData = {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
       bookCode: selectedBook[0],
-      deposit: deposit,
-      rentDate: rentalDate,
-      dueDate: maxDate,
+      deposit: isDeposit ? deposit : 'Brak',
+      rentDate: rentDate,
+      dueDate: isDeposit ? dueDate : 'Wypożyczenie jednodniowe',
       isLongRent: isDeposit
     };
     api.post('/rent/', rentData)
@@ -178,67 +189,45 @@ function Rents() {
 
     console.log(rentData);
 
-    const name = $('#name-edit');
-    const lastName = $('#lastName-edit');
-    const schoolClass = $('#schoolClass-edit');
-
     await setSelectedBook([rentData.bookCode, await getBook(rentData.bookCode)]);
-    document.getElementById('bookTitleField-edit').innerHTML = await getBook(rentData.bookCode);
+    const bookTitleField = document.getElementById('bookTitleField-edit');
+    if (bookTitleField) {
+      bookTitleField.innerHTML = await getBook(rentData.bookCode);
+    }
 
-    const isDeposit = $('#isDeposit-edit');
-    const deposit = $('#deposit-edit');
-    name.val(rentData.name);
-    lastName.val(rentData.lastName);
-    schoolClass.val(rentData.schoolClass);
-    isDeposit.prop('checked', rentData.isLongRent);
+    setName(rentData.name);
+    setLastName(rentData.lastName);
+    setSchoolClass(rentData.schoolClass);
+    setIsDeposit(rentData.isLongRent);
 
     setRentDate(rentData.rentDate);
 
     if (rentData.isLongRent === false) {
-      deposit.val('')
-      deposit.prop('disabled', true);
+      setDeposit('');
+      setIsDeposit(false);
       setDueDate(new Date(rentData.rentDate).toISOString().slice(0, 10));
     } else {
       setDueDate(new Date(rentData.dueDate).toISOString().slice(0, 10));
-      deposit.prop('disabled', false);
-      deposit.val(rentData.deposit);
+      setIsDeposit(true);
+      setDeposit(rentData.deposit);
     }
   }
 
   // Handle the submit of the edit form
   const onSubmitEditForm = (e) => {
-
-    const selectedId = selectedIdToEdit;
-
-    console.log(selectedId);
-
     e.preventDefault();
-
-    const name = document.getElementById('name-edit').value;
-    const lastName = document.getElementById('lastName-edit').value;
-    const schoolClass = document.getElementById('schoolClass-edit').value;
-    let deposit = document.getElementById('deposit-edit').value;
-    const rentalDate = document.getElementById('rentDate-edit').value;
-    var maxDate = document.getElementById('maxDate-edit').value;
-
-    if (!isDeposit) {
-      deposit = 'Brak';
-      maxDate = 'Wypożyczenie jednodniowe';
-    }
 
     const rentData = {
       name: name,
       lastName: lastName,
       schoolClass: schoolClass,
-      deposit: deposit,
-      rentDate: rentalDate,
-      dueDate: maxDate,
+      deposit: isDeposit ? deposit : 'Brak',
+      rentDate: rentDate,
+      dueDate: isDeposit ? dueDate : 'Wypożyczenie jednodniowe',
       isLongRent: isDeposit
     };
 
-    console.log(rentData);
-
-    api.put(`/rent/${selectedId}`, rentData)
+    api.put(`/rent/${selectedIdToEdit}`, rentData)
     alert('Wypożyczenie zaktualizowane!')
     window.location.reload();
   }
@@ -293,6 +282,10 @@ function Rents() {
   }
 
   const resetFormStates = () => {
+    setName('');
+    setLastName('');
+    setSchoolClass('');
+    setDeposit('');
     setRentDate(new Date().toISOString().slice(0, 10));
     setDueDate(new Date().toISOString().slice(0, 10));
     setIsDeposit(false);
@@ -300,7 +293,7 @@ function Rents() {
     buttons.forEach(btn => {
       btn.classList.remove('btn-success');
       btn.classList.add('btn-secondary');
-  });
+    });
 
     setSelectedBook([]);
     if (document.getElementById('bookTitleField')) {
@@ -347,7 +340,7 @@ function Rents() {
       </Container>
       <Container fluid className="mt-4">
         {/* Render the rents table */}
-        <RentsTable setShowEditRent={setShowEditRent} rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
+        <RentsTable showEditRent={handleShow_editRent} rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
       </Container>
 
       <Modal
@@ -383,17 +376,17 @@ function Rents() {
         <Form onSubmit={onSubmitAddForm}>
           <Modal.Body className="text-start">
 
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId='addRent-name'>
               <Form.Label>Imię</Form.Label>
-              <Form.Control type="text" id="name" required />
+              <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId='addRent-lastName'>
               <Form.Label>Nazwisko</Form.Label>
-              <Form.Control type="text" id="lastName" required />
+              <Form.Control type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label htmlFor="schoolClass" >Klasa</Form.Label>
-              <Form.Control type="text" id="schoolClass" required />
+            <Form.Group className="mb-3" controlId='addRent-schoolClass'>
+              <Form.Label>Klasa</Form.Label>
+              <Form.Control type="text" value={schoolClass} onChange={(e) => setSchoolClass(e.target.value)} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Row>
@@ -416,29 +409,27 @@ function Rents() {
                   inline
                   label="Wypożyczenie z kaucją?"
                   type="checkbox"
-                  id="isDeposit"
-                  name='isDeposit'
                   onChange={(e) => setIsDeposit(e.target.checked)}
                   checked={isDeposit}
                 />
               </Col>
               <Col className='col ps-0'>
-                <Form.Control type="number" id="deposit" name='deposit' placeholder='Tylko cyfra' disabled={!isDeposit} required />
+                <Form.Control type="number" placeholder='Tylko cyfra' disabled={!isDeposit} required />
               </Col>
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label htmlFor="rentalDate">Data wypożyczenia</Form.Label>
-              <Form.Control type="date" id="rentDate" name='rentDate' value={rentDate} onChange={(e) => setRentDate(e.target.value)} />
+            <Form.Group className="mb-3" controlId='addRent-rentDate'>
+              <Form.Label>Data wypożyczenia</Form.Label>
+              <Form.Control type="date" value={rentDate} onChange={(e) => setRentDate(e.target.value)} />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="maxDate">Termin</Form.Label>
-              <Form.Control type="date" id="maxDate" name='dueDate' value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              <Form.Label>Termin</Form.Label>
+              <Form.Control type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </Form.Group>
 
           </Modal.Body>
           <Modal.Footer>
-            <Button type="button" id='modalCancel' variant='secondary' onClick={() => { resetFormStates(); setSelectedBook([]); handleClose_addRent(); }} >Anuluj</Button>
-            <Button type="submit" id='modalSubmit' variant='primary'>Zatwierdź</Button>
+            <Button type="button" variant='secondary' onClick={() => { resetFormStates(); setSelectedBook([]); handleClose_addRent(); }} >Anuluj</Button>
+            <Button type="submit" variant='primary'>Zatwierdź</Button>
           </Modal.Footer>
         </Form>
       </Modal>
@@ -452,22 +443,22 @@ function Rents() {
         centered
       >
         <Modal.Header>
-          <h1 className="modal-title fs-5" id="exampleModalLabel">Nowe wypożyczenie</h1>
+          <h1 className="modal-title fs-5" id="exampleModalLabel">Edycja wypożyczenia</h1>
         </Modal.Header>
         <Form onSubmit={onSubmitEditForm}>
           <Modal.Body className="text-start">
 
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId='addRent-name'>
               <Form.Label>Imię</Form.Label>
-              <Form.Control type="text" id="name-edit" required />
+              <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId='addRent-lastName'>
               <Form.Label>Nazwisko</Form.Label>
-              <Form.Control type="text" id="lastName-edit" required />
+              <Form.Control type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label htmlFor="schoolClass" >Klasa</Form.Label>
-              <Form.Control type="text" id="schoolClass-edit" required />
+            <Form.Group className="mb-3" controlId='addRent-schoolClass'>
+              <Form.Label>Klasa</Form.Label>
+              <Form.Control type="text" value={schoolClass} onChange={(e) => setSchoolClass(e.target.value)} required />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Text muted>
@@ -482,29 +473,27 @@ function Rents() {
                   inline
                   label="Wypożyczenie z kaucją?"
                   type="checkbox"
-                  id="isDeposit-edit"
-                  name='isDeposit'
                   onChange={(e) => setIsDeposit(e.target.checked)}
                   checked={isDeposit}
                 />
               </Col>
               <Col className='col ps-0'>
-                <Form.Control type="number" id="deposit-edit" name='deposit' placeholder='Tylko cyfra' disabled={!isDeposit} required />
+                <Form.Control type="number" placeholder='Tylko cyfra' disabled={!isDeposit} required />
               </Col>
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label htmlFor="rentalDate">Data wypożyczenia</Form.Label>
-              <Form.Control type="date" id="rentDate-edit" name='rentDate' value={rentDate} onChange={(e) => setRentDate(e.target.value)} />
+            <Form.Group className="mb-3" controlId='addRent-rentDate'>
+              <Form.Label>Data wypożyczenia</Form.Label>
+              <Form.Control type="date" value={rentDate} onChange={(e) => setRentDate(e.target.value)} />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="maxDate">Termin</Form.Label>
-              <Form.Control type="date" id="maxDate-edit" name='dueDate' value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              <Form.Label>Termin</Form.Label>
+              <Form.Control type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </Form.Group>
 
           </Modal.Body>
           <Modal.Footer>
-            <Button type="button" id='modalCancel-edit' variant='secondary' onClick={() => { resetFormStates(); setSelectedBook([]); handleClose_editRent(); }}>Anuluj</Button>
-            <Button type="submit" id='modalSubmit-edit' variant='primary'>Zatwierdź</Button>
+            <Button type="button" variant='secondary' onClick={() => { resetFormStates(); setSelectedBook([]); handleClose_editRent(); }} >Anuluj</Button>
+            <Button type="submit" variant='primary'>Zatwierdź</Button>
           </Modal.Footer>
         </Form>
       </Modal>
