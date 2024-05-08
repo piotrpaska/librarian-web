@@ -4,14 +4,15 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from './Api';
 import ChooseBookModal from './modals/ChooseBookModal';
 import RentsTable from './components/RentsTable';
-import { Container, Row, Col, Form, Button, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Modal, Spinner } from 'react-bootstrap';
 
 function Rents() {
 
   const [isDeposit, setIsDeposit] = useState(false);
   const [rentDate, setRentDate] = useState(new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
-  const [rents, setRents] = useState([]);
+  const [rents, setRents] = useState(null);
+  const [areRentsLoaded, setAreRentsLoaded] = useState(false);
 
   const [books, setBooks] = useState([]);
 
@@ -52,8 +53,9 @@ function Rents() {
     const fetchRents = async () => {
       const response = await api.get('/rent/')
       setRents(response.data)
+      setAreRentsLoaded(true)
     }
-    fetchRents()
+    return () => fetchRents()
   }, [])
 
   useEffect(() => {
@@ -340,7 +342,8 @@ function Rents() {
       </Container>
       <Container fluid className="mt-4">
         {/* Render the rents table */}
-        <RentsTable showEditRent={handleShow_editRent} rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} />
+        {areRentsLoaded ? <RentsTable rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} /> : 
+        <Spinner animation="border" size='lg' />}
       </Container>
 
       <Modal

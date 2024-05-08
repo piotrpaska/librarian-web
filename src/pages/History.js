@@ -3,23 +3,25 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from './Api';
 import HistoryTable from './components/HistoryTable';
-import { Col, Container, Row, Form } from 'react-bootstrap';
+import { Col, Container, Row, Form, Spinner } from 'react-bootstrap';
 
 function History() {
 
   const [rents, setRents] = useState([]);
+  const [areRentsLoaded, setAreRentsLoaded] = useState(false);
 
   useEffect(() => {
     document.getElementById('history-href').classList.add('active');
   }, [])
 
-  const fetchRents = async () => {
-    const response = await api.get('/history/')
-    setRents(response.data)
-  }
-
   useEffect(() => {
-    fetchRents()
+    const fetchRents = async () => {
+      const response = await api.get('/history/')
+      setRents(response.data)
+      setAreRentsLoaded(true)
+    }
+
+    return () => fetchRents()
   }, [])
 
   function search() {
@@ -64,7 +66,7 @@ function History() {
         </Row>
       </Container>
       <Container fluid className="mt-4">
-        <HistoryTable rents={rents} />
+        {areRentsLoaded ? <HistoryTable rents={rents} /> : <Spinner variant='border' size='lg' />}
       </Container>
     </Container>
   );

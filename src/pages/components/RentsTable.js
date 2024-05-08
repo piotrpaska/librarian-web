@@ -2,7 +2,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from "../Api";
 import React, { useEffect } from 'react';
-import { Table } from 'react-bootstrap';
+import { Table, Spinner } from 'react-bootstrap';
+import { set } from 'firebase/database';
 
 export default function RentsTable({ rents, handleEndRent, handleEditRent, calculateRentStatus, showEditRent }) {
   return (
@@ -31,12 +32,14 @@ export default function RentsTable({ rents, handleEndRent, handleEditRent, calcu
 function RenderRentRow({ rent, index, handleEndRent, handleEditRent, calculateRentStatus, showEditRent}) {
 
   const [bookTitle, setBookTitle] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(true);
 
   useEffect(() => {
     async function getBookTitle(code) {
       const book = await api.get(`/book/${code}`);
       console.log(book.data)
       setBookTitle(book.data.title);
+      setIsLoading(false);
     }
 
     getBookTitle(rent.bookCode);
@@ -48,7 +51,7 @@ function RenderRentRow({ rent, index, handleEndRent, handleEditRent, calculateRe
       <td>{rent.name}</td>
       <td>{rent.lastName}</td>
       <td>{rent.schoolClass}</td>
-      <td>{bookTitle}</td>
+      <td>{isLoading ? <Spinner variant='border' size='sm' /> : bookTitle}</td>
       <td>{rent.deposit}</td>
       <td>{rent.rentDate}</td>
       <td>{rent.dueDate}</td>
