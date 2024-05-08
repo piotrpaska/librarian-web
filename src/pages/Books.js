@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import $ from 'jquery';
+import BooksTable from './components/BooksTable';
 import api from './Api';
-import { Col, Container, Row, Form, Button, Table } from 'react-bootstrap';
+import { Col, Container, Row, Form, Spinner } from 'react-bootstrap';
 
 function Books() {
 
   const [books, setBooks] = useState([]);
+  const [areBooksLoaded, setAreBooksLoaded] = useState(false);
 
   useEffect(() => {
     document.getElementById('books-href').classList.add('active');
   }, [])
 
-  const fetchBooks = async () => {
-    const response = await api.get('/books/')
-    setBooks(response.data)
-  }
-
   useEffect(() => {
-    fetchBooks();
+    const fetchBooks = async () => {
+      const response = await api.get('/books/')
+      setBooks(response.data)
+      setAreBooksLoaded(true)
+    }
+
+    return () => fetchBooks();
   }, []);
 
   function search() {
@@ -63,28 +65,7 @@ function Books() {
         </Row>
       </Container>
       <Container fluid className="mt-4">
-        <Table striped id='table'>
-          <thead>
-            <tr>
-              <th scope='col'>Kod</th>
-              <th scope='col'>Tytuł</th>
-              <th scope='col'>Liczba na stanie</th>
-              <th scope='col'>Liczba wypożyczonych</th>
-            </tr>
-          </thead>
-          <tbody>
-            {books.map((book) => {
-              return (
-                <tr key={book.id}>
-                  <td scope='row'>{book.code}</td>
-                  <td>{book.title}</td>
-                  <td className='fw-bold' style={{ color: book.onStock > 0 ? 'MediumSeaGreen' : 'red' }}>{book.onStock}</td>
-                  <td className='fw-bold' style={{ color: book.rented > 0 ? 'DodgerBlue' : 'white' }}>{book.rented}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </Table>
+        {areBooksLoaded ? <BooksTable books={books} /> : <Spinner variant='border' size='lg' />}
       </Container>
     </Container>
   )
