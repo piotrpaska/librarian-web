@@ -37,7 +37,6 @@ function RenderRentRow({ rent, index, handleEndRent, handleEditRent, calculateRe
   useEffect(() => {
     async function getBookTitle(code) {
       const book = await api.get(`/book/${code}`);
-      console.log(book.data)
       setBookTitle(book.data.title);
       setIsLoading(false);
     }

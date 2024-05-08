@@ -179,7 +179,6 @@ function Rents() {
     async function getBook(code) {
       try {
         const response = await api.get(`/book/${code}`);
-        console.log(response.data);
         return response.data.title;
       } catch (error) {
         console.error(error);
@@ -188,8 +187,6 @@ function Rents() {
 
     const response = await api.get(`/one-rent/${selectedId}`);
     const rentData = response.data;
-
-    console.log(rentData);
 
     await setSelectedBook([rentData.bookCode, await getBook(rentData.bookCode)]);
     const bookTitleField = document.getElementById('bookTitleField-edit');
