@@ -4,7 +4,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from './Api';
 import ChooseBookModal from './modals/ChooseBookModal';
 import RentsTable from './components/RentsTable';
-import { Container, Row, Col, Form, Button, Modal, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Modal, Spinner, OverlayTrigger, Popover, Overlay } from 'react-bootstrap';
 
 function Rents() {
 
@@ -19,6 +19,8 @@ function Rents() {
   const [selectedBook, setSelectedBook] = useState([]);
 
   const [selectedIdToEdit, setSelectedIdToEdit] = useState('');
+
+  const [noChosenBookPopoverShow, setNoChosenBookPopoverShow] = useState(false);
 
   //////////////////////////////// Modal states ////////////////////////////////
   const [showEndRent, setShowEndRent] = useState(false);
@@ -140,6 +142,11 @@ function Rents() {
   // Handle the submit of the add form
   function onSubmitAddForm(e) {
     e.preventDefault();
+
+    if (selectedBook.length === 0) {
+      setNoChosenBookPopoverShow(true);
+      return;
+    }
 
     const rentData = {
       name: name,
@@ -314,6 +321,15 @@ function Rents() {
     fetchBooks()
   }, [])
 
+  const noChosenBookPopover = (
+    <Popover id='noChosenBookPopover'>
+      <Popover.Header as="h3">Nie wybrano książki</Popover.Header>
+      <Popover.Body>
+        Wybierz wypożyczaną książkę.
+      </Popover.Body>
+    </Popover>
+  );
+
   return (
 
     <Container fluid className="mt-2 text-center px-3">
@@ -393,8 +409,11 @@ function Rents() {
             <Form.Group className="mb-3">
               <Row>
                 <Col className='col-auto'>
-                  <Button type="button" variant='outline-info'
-                    onClick={() => { fetchBooks(); handleShowBookModal(); handleClose_addRent(); }}>Wybierz książkę</Button>
+                  <Button type="button" variant='outline-info' id='chooseBookBtn'
+                    onClick={() => { fetchBooks(); handleShowBookModal(); handleClose_addRent(); setNoChosenBookPopoverShow(false); }}>Wybierz książkę</Button>
+                  <Overlay target={document.getElementById('chooseBookBtn')} show={noChosenBookPopoverShow} placement="right">
+                    {noChosenBookPopover}
+                  </Overlay>
                 </Col>
                 <Col>
                   <Form.Text muted>
