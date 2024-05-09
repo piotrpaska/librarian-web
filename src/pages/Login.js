@@ -60,6 +60,7 @@ export default function Login({ user }) {
         <Container className='mt-4 mb-3' id='alerts'></Container>
         <Form
           className='text-start'
+          autoComplete='off'
         >
           <Form.Group className='mb-3' controlId='loginEmail'>
             <Form.Label>Email address</Form.Label>
@@ -85,7 +86,7 @@ export default function Login({ user }) {
         </Modal.Header>
         <Modal.Body>
           <p>Wprowadź adres email, na który zostanie wysłany link resetujący hasło</p>
-          <Form>
+          <Form autoComplete='off'>
             <Form.Group className='mb-3' controlId='resetPasswordEmail'>
               <Form.Label>Email address</Form.Label>
               <Form.Control type='email' placeholder='Enter email' value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} required autoFocus />

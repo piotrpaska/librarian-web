@@ -161,7 +161,7 @@ function Rents() {
     api.post('/rent/', rentData)
     .then(() => {
       api.get('/book-rent/' + selectedBook[0])
-    })
+    });
     alert('Wypożyczenie dodane!')
     window.location.reload();
   }
@@ -175,8 +175,10 @@ function Rents() {
   }
 
   const handleEndRentConfirm = () => {
-    api.delete(`/rent/${rentToDelete[0]}`);
-    api.get('/book-return/' + rentToDelete[1]);
+    api.delete(`/rent/${rentToDelete[0]}`)
+    .then(() => {
+      api.get('/book-return/' + rentToDelete[1]);
+    });
     setRentToDelete([]);
     window.location.reload();
   }
