@@ -152,7 +152,9 @@ function Rents() {
       isLongRent: isDeposit
     };
     api.post('/rent/', rentData)
-    api.get('/book-rent/' + selectedBook[0])
+    .then(() => {
+      api.get('/book-rent/' + selectedBook[0])
+    })
     alert('Wypożyczenie dodane!')
     window.location.reload();
   }
@@ -339,8 +341,8 @@ function Rents() {
       </Container>
       <Container fluid className="mt-4">
         {/* Render the rents table */}
-        {areRentsLoaded ? <RentsTable rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} calculateRentStatus={calculateRentStatus} /> : 
-        <Spinner animation="border" size='lg' />}
+        {areRentsLoaded ? <RentsTable rents={rents} handleEndRent={handleEndRent} handleEditRent={handleEditRent} showEdit={handleShow_editRent} calculateRentStatus={calculateRentStatus} /> :
+          <Spinner animation="border" size='lg' />}
       </Container>
 
       <Modal
@@ -414,7 +416,7 @@ function Rents() {
                 />
               </Col>
               <Col className='col ps-0'>
-                <Form.Control type="number" placeholder='Tylko cyfra' disabled={!isDeposit} required />
+                <Form.Control type="number" placeholder='Tylko cyfra' value={deposit} onChange={(e) => setDeposit(e.target.value)} disabled={!isDeposit} required />
               </Col>
             </Form.Group>
             <Form.Group className="mb-3" controlId='addRent-rentDate'>
@@ -478,7 +480,7 @@ function Rents() {
                 />
               </Col>
               <Col className='col ps-0'>
-                <Form.Control type="number" placeholder='Tylko cyfra' disabled={!isDeposit} required />
+                <Form.Control type="number" placeholder='Tylko cyfra' value={deposit} onChange={(e) => setDeposit(e.target.value)} disabled={!isDeposit} required />
               </Col>
             </Form.Group>
             <Form.Group className="mb-3" controlId='addRent-rentDate'>

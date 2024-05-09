@@ -3,7 +3,6 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import api from "../Api";
 import React, { useEffect } from 'react';
 import { Table, Spinner } from 'react-bootstrap';
-import { set } from 'firebase/database';
 
 export default function HistoryTable({ rents }) {
   return (

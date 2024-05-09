@@ -34,9 +34,6 @@ export default function Login({ user }) {
     e.preventDefault();
     setAlert([]);
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log(userCredential.user);
-      })
       .catch((error) => {
         setAlert(['danger', 'Nieprawidłowe dane logowania']);
         setPassword('');

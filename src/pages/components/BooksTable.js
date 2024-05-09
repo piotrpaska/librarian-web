@@ -1,5 +1,5 @@
 import React from 'react'; 
-import { Table, Spinner } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
 
 export default function BooksTable({ books }) {
     return (
@@ -16,7 +16,7 @@ export default function BooksTable({ books }) {
             {books.map((book) => {
               return (
                 <tr key={book.id}>
-                  <td scope='row'>{book.code}</td>
+                  <td>{book.code}</td>
                   <td>{book.title}</td>
                   <td className='fw-bold' style={{ color: book.onStock > 0 ? 'MediumSeaGreen' : 'red' }}>{book.onStock}</td>
                   <td className='fw-bold' style={{ color: book.rented > 0 ? 'DodgerBlue' : 'white' }}>{book.rented}</td>
