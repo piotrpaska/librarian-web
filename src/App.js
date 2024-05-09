@@ -18,6 +18,7 @@ import Rents from './pages/Rents';
 import History from './pages/History';
 import Books from './pages/Books';
 import Login from './pages/Login';
+import { doc } from 'firebase/firestore';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -40,7 +41,8 @@ function App() {
   useEffect(() => {
     if (user) {
       document.getElementById('navbar').style.display = 'block';
-      document.getElementById('login-page-navbar').style.display = 'none';     
+      document.getElementById('login-page-navbar').style.display = 'none';
+      document.getElementById('username-field').innerHTML = user.email;
     } else {
       document.getElementById('navbar').style.display = 'none';
       document.getElementById('login-page-navbar').style.display = 'block';
