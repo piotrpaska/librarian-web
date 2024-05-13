@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import api from './Api';
+import api from '../services/Api';
 import ChooseBookModal from './modals/ChooseBookModal';
 import RentsTable from './components/RentsTable';
 import { Container, Row, Col, Form, Button, Modal, Spinner, OverlayTrigger, Popover, Overlay } from 'react-bootstrap';
@@ -46,8 +46,6 @@ function Rents() {
   const [deposit, setDeposit] = useState('');
 
   const [rentToDelete, setRentToDelete] = useState([]);
-
-  document.getElementById('rents-href').classList.add('active');
 
   const [isBookChosen, setIsBookChosen] = useState(false);
 

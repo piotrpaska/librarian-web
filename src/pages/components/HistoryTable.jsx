@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import api from "../Api";
+import api from "../../services/Api";
 import React, { useEffect } from 'react';
 import { Table, Spinner } from 'react-bootstrap';
 
