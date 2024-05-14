@@ -70,7 +70,7 @@ export default function Login({ user }) {
             <Form.Label>Password</Form.Label>
             <Form.Control type='password' placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} required />
           </Form.Group>
-          <p><a class="link-opacity-100-hover" onClick={() => setShowResetPassword(true)}>Zapomniałeś hasła?</a></p>
+          <p><a className="link-opacity-100-hover" onClick={() => setShowResetPassword(true)}>Zapomniałeś hasła?</a></p>
           <Button variant='primary' onClick={login}>Zaloguj</Button>
         </Form>
       </Container>

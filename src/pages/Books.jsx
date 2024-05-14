@@ -46,7 +46,7 @@ function Books() {
 
   return (
     <Container fluid className="mt-2 text-center px-3 mt-2 text-center px-3">
-      <h1 class="display-5 text-start ms-3 border-bottom">Spis książek</h1>
+      <h1 className="display-5 text-start ms-3 border-bottom">Spis książek</h1>
       <Container fluid className='mt-4'>
         <Row>
           <Col className='col-auto me-auto d-flex'>
