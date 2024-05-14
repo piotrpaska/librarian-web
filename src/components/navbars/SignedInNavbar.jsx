@@ -1,6 +1,18 @@
 import { signOut } from "firebase/auth";
+import { useEffect, useState } from "react";
 
-export default function SignedInNavbar({auth, user}) {
+export default function SignedInNavbar({auth, user, activeLink}) {
+  const [userEmail, setUserEmail] = useState('')
+  
+  useEffect(() => {
+    document.getElementById(activeLink).classList.add('active');
+    if (user.email !== null) {
+      setUserEmail(user.email)
+    } else {
+      setUserEmail('')
+    }
+  }, [])
+
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
@@ -13,7 +25,7 @@ export default function SignedInNavbar({auth, user}) {
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <a className="nav-link">Zalogowano jako: <strong>{user.email}</strong></a>
+          <a className="nav-link">Zalogowano jako: <strong>{userEmail}</strong></a>
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <a className="nav-link" aria-current="page" href="/rents" id="rents-href">Wypożyczenia</a>

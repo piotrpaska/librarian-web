@@ -28,9 +28,9 @@ function App() {
   const BrowserRouter = createBrowserRouter([
     { path: "/", element: <Navigate to="/login" /> },
     { path: "/login", element: <><NonSignedInNavbar /><Login user={user} /></> },
-    { path: "/rents", element: <><SignedInNavbar auth={auth} user={user} /><ProtectedRoute user={user}><Rents /></ProtectedRoute></> },
-    { path: "/history", element: <><SignedInNavbar auth={auth} user={user} /><ProtectedRoute user={user}><History /></ProtectedRoute></> },
-    { path: "/books", element: <><SignedInNavbar auth={auth} user={user} /><ProtectedRoute user={user}><Books /></ProtectedRoute></> }
+    { path: "/rents", element: <><SignedInNavbar auth={auth} user={user} activeLink={'rents-href'} /><ProtectedRoute user={user}><Rents /></ProtectedRoute></> },
+    { path: "/history", element: <><SignedInNavbar auth={auth} user={user} activeLink={'history-href'} /><ProtectedRoute user={user}><History /></ProtectedRoute></> },
+    { path: "/books", element: <><SignedInNavbar auth={auth} user={user} activeLink={'books-href'} /><ProtectedRoute user={user}><Books /></ProtectedRoute></> }
   ]);
 
   useEffect(() => {
