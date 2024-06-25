@@ -50,10 +50,15 @@ function Rents() {
   const [isBookChosen, setIsBookChosen] = useState(false);
 
   useEffect(() => {
-    const fetchRents = async () => {
-      const response = await api.get('/rent/')
-      setRents(response.data)
-      setAreRentsLoaded(true)
+    const fetchRents = () => {
+      api.get('/rent/')
+        .then(response => {
+          setRents(response.data);
+          setAreRentsLoaded(true);
+        })
+        .catch(error => {
+          console.log(error);
+        });
     }
     return () => fetchRents()
   }, [])
@@ -157,9 +162,9 @@ function Rents() {
       isLongRent: isDeposit
     };
     api.post('/rent/', rentData)
-    .then(() => {
-      api.get('/book-rent/' + selectedBook[0])
-    });
+      .then(() => {
+        api.get('/book-rent/' + selectedBook[0])
+      });
     alert('Wypożyczenie dodane!')
     window.location.reload();
   }
@@ -174,9 +179,9 @@ function Rents() {
 
   const handleEndRentConfirm = () => {
     api.delete(`/rent/${rentToDelete[0]}`)
-    .then(() => {
-      api.get('/book-return/' + rentToDelete[1]);
-    });
+      .then(() => {
+        api.get('/book-return/' + rentToDelete[1]);
+      });
     setRentToDelete([]);
     window.location.reload();
   }
@@ -185,17 +190,19 @@ function Rents() {
   const handleEditRent = async (selectedId) => {
     setSelectedIdToEdit(selectedId);
 
-    async function getBook(code) {
+    function getBook(code) {
       try {
-        const response = await api.get(`/book/${code}`);
-        return response.data.title;
+        api.get(`/book/${code}`)
+          .then(response => { return response.data.title; });
       } catch (error) {
         console.error(error);
       }
     }
 
-    const response = await api.get(`/one-rent/${selectedId}`);
-    const rentData = response.data;
+    api.get(`/one-rent/${selectedId}`)
+      .then(response => {
+        const rentData = response.data;
+      });
 
     await setSelectedBook([rentData.bookCode, await getBook(rentData.bookCode)]);
     const bookTitleField = document.getElementById('bookTitleField-edit');
@@ -312,9 +319,11 @@ function Rents() {
     }
   }
 
-  const fetchBooks = async () => {
-    const response = await api.get('/books/')
-    setBooks(response.data)
+  const fetchBooks = () => {
+    api.get('/books/')
+      .then(response => {
+        setBooks(response.data);
+      })
   }
 
   useEffect(() => {

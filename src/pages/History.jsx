@@ -11,10 +11,12 @@ function History() {
   const [areRentsLoaded, setAreRentsLoaded] = useState(false);
 
   useEffect(() => {
-    const fetchRents = async () => {
-      const response = await api.get('/history/')
-      setRents(response.data)
-      setAreRentsLoaded(true)
+    const fetchRents = () => {
+      api.get('/history/')
+        .then(response => {
+          setRents(response.data);
+          setAreRentsLoaded(true);
+        })
     }
 
     return () => fetchRents()

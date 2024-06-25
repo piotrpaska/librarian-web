@@ -11,10 +11,12 @@ function Books() {
   const [areBooksLoaded, setAreBooksLoaded] = useState(false);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      const response = await api.get('/books/')
-      setBooks(response.data)
-      setAreBooksLoaded(true)
+    const fetchBooks = () => {
+      api.get('/books/')
+        .then(response => {
+          setBooks(response.data);
+          setAreBooksLoaded(true);
+        })
     }
 
     return () => fetchBooks();

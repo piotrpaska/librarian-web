@@ -9,7 +9,7 @@
 /coverage
 
 # production
-/build
+/dist
 
 # misc
 .DS_Store
@@ -26,3 +26,9 @@ api-server/config/__pycache__
 api-server/models/__pycache__
 api-server/routes/__pycache__
 api-server/schemas/__pycache__
+
+
+# Firebase
+firebase.json
+.firebaserc
+.firebase
