@@ -34,10 +34,12 @@ function RenderRentRow({ rent, index, handleEndRent, handleEditRent, calculateRe
   const [isLoading, setIsLoading] = React.useState(true);
 
   useEffect(() => {
-    async function getBookTitle(code) {
-      const book = await api.get(`/book/${code}`);
-      setBookTitle(book.data.title);
-      setIsLoading(false);
+    const getBookTitle = (code) => {
+      api.get(`/book/${code}`)
+        .then(book => {
+          setBookTitle(book.data.title);
+          setIsLoading(false);
+        })
     }
 
     getBookTitle(rent.bookCode);

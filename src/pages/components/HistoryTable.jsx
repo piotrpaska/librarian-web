@@ -32,13 +32,15 @@ function HistoryTableRow({ rent, index }) {
   const [isLoading, setIsLoading] = React.useState(true);
 
   useEffect(() => {
-    async function getBookTitle(code) {
-      const book = await api.get(`/book/${code}`);
-      setBookTitle(book.data.title);
-      setIsLoading(false);
+    const getBookTitle = (code) => {
+      api.get(`/book/${code}`)
+        .then(book => {
+          setBookTitle(book.data.title);
+          setIsLoading(false);
+        })
     }
-    return () => getBookTitle(rent.bookCode);
-  }, [bookTitle]);
+    getBookTitle(rent.bookCode);
+  }, []);
 
   return (
     <tr key={rent.id}>
